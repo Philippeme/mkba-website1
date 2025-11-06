@@ -1,0 +1,842 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Paramètres Système{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        :root {
+            --mk-primary: #0071BC;
+            --mk-secondary: #8e32e9;
+            --mk-orange: #f18221;
+            --mk-blue: #1a4b8f;
+            --mk-success: #10b981;
+            --mk-warning: #f59e0b;
+            --mk-danger: #ef4444;
+            --mk-info: #3b82f6;
+        }
+
+        .settings-header {
+            background: linear-gradient(135deg, var(--mk-orange) 0%, var(--mk-primary) 100%);
+            color: white;
+            padding: 2rem 0;
+            margin: -2rem -2rem 2rem -2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .settings-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="settings-grid" width="20" height="20" patternUnits="userSpaceOnUse"><path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23settings-grid)"/></svg>');
+            opacity: 0.3;
+        }
+
+        /* ========== BARRE DE RECHERCHE ========== */
+        .search-section {
+            margin-bottom: 32px;
+        }
+
+        .search-container-settings {
+            position: relative;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .search-input-settings {
+            width: 100%;
+            padding: 12px 20px 12px 48px;
+            border: 2px solid #e5e7eb;
+            border-radius: 25px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .search-input-settings:focus {
+            outline: none;
+            border-color: var(--mk-primary);
+            box-shadow: 0 0 0 4px rgba(0, 113, 188, 0.1), inset 0 2px 4px rgba(0,0,0,0.06);
+            background: white;
+        }
+
+        .search-input-settings::placeholder {
+            color: #9ca3af;
+            font-style: italic;
+        }
+
+        .search-icon-settings {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            font-size: 16px;
+            transition: color 0.3s ease;
+        }
+
+        .search-container-settings:focus-within .search-icon-settings {
+            color: var(--mk-primary);
+        }
+
+        .search-results-info {
+            text-align: center;
+            margin-top: 12px;
+            color: #6b7280;
+            font-size: 13px;
+            transition: all 0.3s ease;
+        }
+
+        .search-clear-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .search-clear-btn.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .search-clear-btn:hover {
+            background: #f3f4f6;
+            color: var(--mk-danger);
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+            display: none;
+        }
+
+        .no-results.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .no-results-icon {
+            font-size: 64px;
+            color: #d1d5db;
+            margin-bottom: 16px;
+        }
+
+        .no-results h3 {
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        /* ========== CARTES AVEC FILTRAGE ========== */
+        .settings-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            margin-bottom: 2rem;
+        }
+        
+        .settings-grid .settings-card {
+            flex: 0 0 calc(33.333% - 16px);
+            min-height: 230px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .settings-card-header {
+            flex: 0 0 auto;
+        }
+        
+        .settings-card-body {
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .settings-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.05);
+            position: relative;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .settings-card.hidden {
+            display: none;
+        }
+
+        .settings-card.highlighted {
+            border-color: var(--mk-primary);
+            box-shadow: 0 8px 32px rgba(0, 113, 188, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .settings-card:hover:not(.hidden) {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+        }
+
+        .settings-card-header {
+            padding: 24px;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        .settings-card-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .settings-card-icon::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%);
+        }
+
+        .card-general .settings-card-icon { background: linear-gradient(135deg, #6d5192, #8e32e9); }
+        .card-datasources .settings-card-icon { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .card-customizing .settings-card-icon { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .card-files .settings-card-icon { background: linear-gradient(135deg, #10b981, #059669); }
+        .card-pages .settings-card-icon { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .card-modules .settings-card-icon { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .card-security .settings-card-icon { background: linear-gradient(135deg, #f18221, #ea580c); }
+        .card-backup .settings-card-icon { background: linear-gradient(135deg, #1a4b8f, #1e40af); }
+
+        .settings-card-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--mk-primary);
+            margin-bottom: 8px;
+        }
+
+        .settings-card-description {
+            color: #6b7280;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .settings-card-body {
+            padding: 24px;
+        }
+
+        .settings-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn-settings {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .btn-settings-primary {
+            background: var(--mk-primary);
+            color: white;
+        }
+
+        .btn-settings-primary:hover {
+            background: var(--mk-secondary);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .btn-settings-outline {
+            background: transparent;
+            color: var(--mk-orange);
+            border-color: var(--mk-orange);
+        }
+
+        .btn-settings-outline:hover {
+            background: var(--mk-orange);
+            color: white;
+        }
+
+        .system-status {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+        }
+
+        .status-item {
+            text-align: center;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .status-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--mk-primary);
+            margin-bottom: 8px;
+        }
+
+        .status-label {
+            font-size: 14px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .status-online { background: var(--mk-success); }
+        .status-warning { background: var(--mk-warning); }
+        .status-offline { background: var(--mk-danger); }
+
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border-left: 4px solid var(--mk-primary);
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--mk-primary);
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        /* ========== ANIMATIONS ========== */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .search-input-settings:focus + .search-icon-settings {
+            animation: pulse 0.5s ease;
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 768px) {
+            .settings-grid {
+                flex-direction: column;
+            }
+            
+            .settings-grid .settings-card {
+                max-width: 100%;
+                flex: 1 1 auto;
+            }
+            
+            .settings-header {
+                margin: -2rem -10px 2rem -10px;
+                padding: 1.5rem 0;
+            }
+            
+            .settings-card {
+                margin: 0 -10px;
+            }
+
+            .search-section {
+                margin-bottom: 24px;
+            }
+
+            .search-input-settings {
+                font-size: 14px;
+                padding: 10px 16px 10px 40px;
+            }
+
+            .search-icon-settings {
+                left: 14px;
+                font-size: 14px;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="settings-header">
+    <div class="container-fluid position-relative">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2">
+                    <i class="bi-gear-fill me-3"></i>
+                    Paramètres Système MK BA
+                </h1>
+                <p class="mb-0">Configuration et administration de toutes les fonctionnalités du système</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="d-flex align-items-center justify-content-end gap-3">
+                    <span class="status-indicator status-online"></span>
+                    <span class="text-white-50">Système opérationnel</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section de recherche -->
+<div class="search-section">
+    <div class="search-container-settings">
+        <i class="bi-search search-icon-settings"></i>
+        <input type="text" 
+               id="settingsSearch" 
+               class="search-input-settings" 
+               placeholder="Rechercher des paramètres, configurations, modules...">
+        <button type="button" class="search-clear-btn" id="clearSearch">
+            <i class="bi-x-lg"></i>
+        </button>
+    </div>
+    <div class="search-results-info" id="searchResults">
+        <span id="resultsCount">8</span> paramètres disponibles
+    </div>
+</div>
+
+<!-- Résultats vides -->
+<div class="no-results" id="noResults">
+    <div class="no-results-icon">
+        <i class="bi-search"></i>
+    </div>
+    <h3>Aucun paramètre trouvé</h3>
+    <p>Essayez d'autres mots-clés ou vérifiez l'orthographe</p>
+    <button class="btn btn-outline-primary mt-3" onclick="clearSearchInput()">
+        <i class="bi-arrow-clockwise me-2"></i>
+        Réinitialiser la recherche
+    </button>
+</div>
+
+<!-- Grille des paramètres -->
+<div class="settings-grid" id="settingsGrid">
+    <!-- Configurations générales -->
+    <div class="settings-card card-general" data-keywords="general configuration langue fuseau horaire maintenance global système">
+        <div class="settings-card-header">
+            <div class="settings-card-icon">
+                <i class="bi-sliders"></i>
+            </div>
+            <h4 class="settings-card-title">Configurations Générales</h4>
+            <p class="settings-card-description">
+                Paramètres globaux de l'application : nom, langue, fuseau horaire, maintenance
+            </p>
+        </div>
+        <div class="settings-card-body">
+            <div class="settings-actions">
+                <a href="{{ path('admin_settings_general') }}" class="btn-settings btn-settings-primary">
+                    <i class="bi-gear"></i>
+                    Configurer
+                </a>
+                <a href="#" class="btn-settings btn-settings-outline">
+                    <i class="bi-eye"></i>
+                    Aperçu
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sources de données -->
+    <div class="settings-card card-datasources" data-keywords="database données api externe service tiers connexion base sql">
+        <div class="settings-card-header">
+            <div class="settings-card-icon">
+                <i class="bi-database"></i>
+            </div>
+            <h4 class="settings-card-title">Sources de Données</h4>
+            <p class="settings-card-description">
+                Configuration des connexions base de données, API externes, services tiers
+            </p>
+        </div>
+        <div class="settings-card-body">
+            <div class="settings-actions">
+                <a href="{{ path('admin_settings_datasources') }}" class="btn-settings btn-settings-primary">
+                    <i class="bi-plug"></i>
+                    Gérer
+                </a>
+                <a href="#" class="btn-settings btn-settings-outline">
+                    <i class="bi-graph-up"></i>
+                    Statuts
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Personnalisation -->
+    <div class="settings-card card-customizing" data-keywords="theme couleur logo design interface personnalisation style css">
+        <div class="settings-card-header">
+            <div class="settings-card-icon">
+                <i class="bi-palette2"></i>
+            </div>
+            <h4 class="settings-card-title">Personnalisation</h4>
+            <p class="settings-card-description">
+                Thèmes, couleurs, logos, mise en page et personnalisation de l'interface
+            </p>
+        </div>
+        <div class="settings-card-body">
+            <div class="settings-actions">
+                <a href="{{ path('admin_settings_customizing') }}" class="btn-settings btn-settings-primary">
+                    <i class="bi-brush"></i>
+                    Personnaliser
+                </a>
+                <a href="#" class="btn-settings btn-settings-outline">
+                    <i class="bi-eye"></i>
+                    Prévisualiser
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gestion des fichiers -->
+    <div class="settings-card card-files" data-keywords="fichier upload stockage format quota sécurité media document pdf">
+        <div class="settings-card-header">
+            <div class="settings-card-icon">
+                <i class="bi-folder2-open"></i>
+            </div>
+            <h4 class="settings-card-title">Gestion des Fichiers</h4>
+            <p class="settings-card-description">
+                Paramètres d'upload, stockage, formats autorisés, quotas et sécurité
+            </p>
+        </div>
+        <div class="settings-card-body">
+            <div class="settings-actions">
+                <a href="{{ path('admin_settings_files') }}" class="btn-settings btn-settings-primary">
+                    <i class="bi-folder-plus"></i>
+                    Configurer
+                </a>
+                <a href="#" class="btn-settings btn-settings-outline">
+                    <i class="bi-pie-chart"></i>
+                    Utilisation
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pages CMS -->
+    <div class="settings-card card-pages" data-keywords="cms page statique template contenu structure site web">
+        <div class="settings-card-header">
+            <div class="settings-card-icon">
+                <i class="bi-file-earmark-text"></i>
+            </div>
+            <h4 class="settings-card-title">Pages CMS</h4>
+            <p class="settings-card-description">
+                Gestion des pages statiques, templates, contenus et structure du site
+            </p>
+        </div>
+        <div class="settings-card-body">
+            <div class="settings-actions">
+                <a href="{{ path('admin_settings_pages') }}" class="btn-settings btn-settings-primary">
+                    <i class="bi-file-plus"></i>
+                    Gérer
+                </a>
+                <a href="#" class="btn-settings btn-settings-outline">
+                    <i class="bi-layout-text-window"></i>
+                    Templates
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modules -->
+    <div class="settings-card card-modules" data-keywords="module extension plugin activation configuration addon">
+        <div class="settings-card-header">
+            <div class="settings-card-icon">
+                <i class="bi-puzzle"></i>
+            </div>
+            <h4 class="settings-card-title">Modules</h4>
+            <p class="settings-card-description">
+                Activation, configuration et gestion des modules et extensions système
+            </p>
+        </div>
+        <div class="settings-card-body">
+            <div class="settings-actions">
+                <a href="{{ path('admin_settings_modules') }}" class="btn-settings btn-settings-primary">
+                    <i class="bi-boxes"></i>
+                    Modules
+                </a>
+                <a href="#" class="btn-settings btn-settings-outline">
+                    <i class="bi-download"></i>
+                    Extensions
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sécurité -->
+    <div class="settings-card card-security" data-keywords="sécurité authentification permission accès firewall protection mot passe">
+        <div class="settings-card-header">
+            <div class="settings-card-icon">
+                <i class="bi-shield-lock"></i>
+            </div>
+            <h4 class="settings-card-title">Sécurité</h4>
+            <p class="settings-card-description">
+                Paramètres de sécurité, authentification, permissions et accès système
+            </p>
+        </div>
+        <div class="settings-card-body">
+            <div class="settings-actions">
+                <a href="{{ path('admin_settings_security') }}" class="btn-settings btn-settings-primary">
+                    <i class="bi-key"></i>
+                    Sécuriser
+                </a>
+                <a href="#" class="btn-settings btn-settings-outline">
+                    <i class="bi-activity"></i>
+                    Audit
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sauvegarde -->
+    <div class="settings-card card-backup" data-keywords="sauvegarde backup restauration archive automatique planification">
+        <div class="settings-card-header">
+            <div class="settings-card-icon">
+                <i class="bi-cloud-arrow-up"></i>
+            </div>
+            <h4 class="settings-card-title">Sauvegarde & Restauration</h4>
+            <p class="settings-card-description">
+                Configuration des sauvegardes automatiques, restauration et archivage
+            </p>
+        </div>
+        <div class="settings-card-body">
+            <div class="settings-actions">
+                <a href="{{ path('admin_settings_backup') }}" class="btn-settings btn-settings-primary">
+                    <i class="bi-cloud-upload"></i>
+                    Sauvegarder
+                </a>
+                <a href="#" class="btn-settings btn-settings-outline">
+                    <i class="bi-clock-history"></i>
+                    Historique
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('settingsSearch');
+            const clearBtn = document.getElementById('clearSearch');
+            const resultsInfo = document.getElementById('searchResults');
+            const resultsCount = document.getElementById('resultsCount');
+            const noResults = document.getElementById('noResults');
+            const settingsGrid = document.getElementById('settingsGrid');
+            const settingsCards = document.querySelectorAll('.settings-card');
+
+            let totalCards = settingsCards.length;
+
+            // Fonction de recherche
+            function performSearch() {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                let visibleCount = 0;
+                let matchedCards = [];
+
+                // Désactiver temporairement toutes les transitions
+                settingsCards.forEach(card => {
+                    card.style.transition = 'none';
+                });
+
+                // Réinitialiser tous les ordres
+                settingsCards.forEach(card => {
+                    card.style.order = '';
+                    card.classList.remove('highlighted');
+                });
+
+                // Première passe : identifier les cartes correspondantes
+                settingsCards.forEach(card => {
+                    const keywords = card.dataset.keywords || '';
+                    const title = card.querySelector('.settings-card-title').textContent.toLowerCase();
+                    const description = card.querySelector('.settings-card-description').textContent.toLowerCase();
+                    
+                    const isMatch = !searchTerm || 
+                                   keywords.includes(searchTerm) || 
+                                   title.includes(searchTerm) || 
+                                   description.includes(searchTerm);
+
+                    if (isMatch) {
+                        matchedCards.push(card);
+                        visibleCount++;
+                    }
+                });
+
+                // Deuxième passe : organiser l'affichage
+                settingsCards.forEach(card => {
+                    const isMatched = matchedCards.includes(card);
+                    
+                    if (isMatched) {
+                        card.classList.remove('hidden');
+                        if (searchTerm) {
+                            card.classList.add('highlighted');
+                            // Assigner un ordre séquentiel aux cartes trouvées
+                            const matchIndex = matchedCards.indexOf(card);
+                            card.style.order = matchIndex + 1;
+                        } else {
+                            // Mode normal : ordre naturel
+                            card.style.order = '';
+                        }
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                });
+
+                // Réactiver les transitions après un court délai
+                setTimeout(() => {
+                    settingsCards.forEach(card => {
+                        card.style.transition = '';
+                    });
+                }, 50);
+
+                // Mise à jour des informations de résultats
+                if (searchTerm) {
+                    resultsCount.textContent = visibleCount;
+                    resultsInfo.innerHTML = `<strong>${visibleCount}</strong> paramètre${visibleCount > 1 ? 's' : ''} trouvé${visibleCount > 1 ? 's' : ''} pour "<em>${searchTerm}</em>"`;
+                    clearBtn.classList.add('show');
+                } else {
+                    resultsCount.textContent = totalCards;
+                    resultsInfo.innerHTML = `<span>${totalCards}</span> paramètres disponibles`;
+                    clearBtn.classList.remove('show');
+                }
+
+                // Affichage du message "aucun résultat"
+                if (visibleCount === 0 && searchTerm) {
+                    noResults.classList.add('show');
+                    settingsGrid.style.display = 'none';
+                } else {
+                    noResults.classList.remove('show');
+                    settingsGrid.style.display = 'flex';
+                }
+            }
+
+            // Fonction pour vider la recherche
+            function clearSearchInput() {
+                searchInput.value = '';
+                searchInput.focus();
+                performSearch();
+            }
+
+            // Événements
+            searchInput.addEventListener('input', performSearch);
+            searchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    clearSearchInput();
+                }
+            });
+
+            clearBtn.addEventListener('click', clearSearchInput);
+
+            // Raccourci clavier Ctrl+K
+            document.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                    e.preventDefault();
+                    searchInput.focus();
+                    searchInput.select();
+                }
+            });
+
+            // Animation des cartes au scroll
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            // Observer toutes les cartes - sans transitions pour éviter l'effet lors de la recherche
+            settingsCards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                observer.observe(card);
+            });
+
+            // Appliquer les transitions seulement après l'observation initiale
+            setTimeout(() => {
+                settingsCards.forEach((card, index) => {
+                    card.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
+                });
+            }, 100);
+
+            // Focus automatique sur la recherche
+            setTimeout(() => {
+                searchInput.focus();
+            }, 500);
+
+            console.log('%c⚙️ Page des paramètres MK BA chargée avec recherche', 'color: #0071BC; font-size: 16px; font-weight: bold;');
+        });
+
+        // Fonction globale pour vider la recherche
+        function clearSearchInput() {
+            const searchInput = document.getElementById('settingsSearch');
+            searchInput.value = '';
+            searchInput.focus();
+            searchInput.dispatchEvent(new Event('input'));
+        }
+    </script>
+{% endblock %}

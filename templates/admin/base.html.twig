@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Administration{% endblock %} - MK BA</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"/>
+
+    <!-- NOUVEAU: Styles pour le système de messages centralisé -->
+    <style>
+        /* Système de messages flash centralisé */
+        .flash-messages-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .flash-message {
+            margin-bottom: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(10px);
+            border: none;
+            animation: slideInRight 0.4s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .flash-message::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+        }
+
+        .flash-message.alert-success {
+            background: rgba(16, 185, 129, 0.95);
+            color: white;
+            border-left: 4px solid #059669;
+        }
+
+        .flash-message.alert-success::before {
+            background: #059669;
+        }
+
+        .flash-message.alert-danger {
+            background: rgba(239, 68, 68, 0.95);
+            color: white;
+            border-left: 4px solid #dc2626;
+        }
+
+        .flash-message.alert-danger::before {
+            background: #dc2626;
+        }
+
+        .flash-message.alert-warning {
+            background: rgba(245, 158, 11, 0.95);
+            color: white;
+            border-left: 4px solid #d97706;
+        }
+
+        .flash-message.alert-warning::before {
+            background: #d97706;
+        }
+
+        .flash-message.alert-info {
+            background: rgba(59, 130, 246, 0.95);
+            color: white;
+            border-left: 4px solid #2563eb;
+        }
+
+        .flash-message.alert-info::before {
+            background: #2563eb;
+        }
+
+        .flash-message .alert-content {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            position: relative;
+        }
+
+        .flash-message .alert-icon {
+            font-size: 1.2rem;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .flash-message .alert-text {
+            flex: 1;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        .flash-message .btn-close {
+            filter: invert(1);
+            opacity: 0.8;
+            margin-left: 15px;
+            flex-shrink: 0;
+        }
+
+        .flash-message .btn-close:hover {
+            opacity: 1;
+        }
+
+        /* Progress bar pour le dismiss automatique */
+        .flash-message .auto-dismiss-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.3);
+            animation: shrinkWidth 2s linear;
+        }
+
+        /* Animations */
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        @keyframes shrinkWidth {
+            from {
+                width: 100%;
+            }
+            to {
+                width: 0%;
+            }
+        }
+
+        .flash-message.dismissing {
+            animation: slideOutRight 0.4s ease-in forwards;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .flash-messages-container {
+                left: 10px;
+                right: 10px;
+                max-width: none;
+                top: 10px;
+            }
+            
+            .flash-message .alert-content {
+                padding: 12px 15px;
+            }
+            
+            .flash-message .alert-text {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+    {% block stylesheets %}
+        {{ encore_entry_link_tags('admin') }}
+        {{ encore_entry_link_tags('admin-styles') }}
+    {% endblock %}</head>
+<body>
+    <!-- Container pour les messages flash centralisés -->
+    <div class="flash-messages-container" id="flashMessagesContainer">
+        {% for type, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert flash-message alert-{{ type == 'error' ? 'danger' : type }} fade show" role="alert" data-auto-dismiss="true">
+                    <div class="alert-content">
+                        <i class="alert-icon fas fa-{{ type == 'success' ? 'check-circle' : (type == 'error' or type == 'danger' ? 'exclamation-triangle' : (type == 'warning' ? 'exclamation-circle' : 'info-circle')) }}"></i>
+                        <span class="alert-text">{{ message }}</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    <div class="auto-dismiss-progress"></div>
+                </div>
+            {% endfor %}
+        {% endfor %}
+    </div>
+
+    <div class="admin-wrapper">
+        <!-- Sidebar -->
+            {% include 'admin/_sidebar.html.twig' %}
+        <!-- Contenu principal -->
+        {% block breadcrumb %}{% endblock %}
+        <div class="admin-content" id="adminContent">
+            {% include 'admin/_header.html.twig' with {
+                'breadcrumb_content': block('breadcrumb')
+            } %}
+            <div class="admin-main">
+                {% block body %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery pour DataTables -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script>
+        // Gestion centralisée des messages flash
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeFlashMessages();
+            setupMenuActiveStates();
+        });
+
+        function initializeFlashMessages() {
+            const flashMessages = document.querySelectorAll('.flash-message[data-auto-dismiss="true"]');
+            
+            flashMessages.forEach(message => {
+                // Auto dismiss après 3 secondes
+                setTimeout(() => {
+                    dismissFlashMessage(message);
+                }, 3000);
+
+                // Gestion du clic sur le bouton close
+                const closeBtn = message.querySelector('.btn-close');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        dismissFlashMessage(message);
+                    });
+                }
+            });
+        }
+
+        function dismissFlashMessage(message) {
+            if (message && !message.classList.contains('dismissing')) {
+                message.classList.add('dismissing');
+                setTimeout(() => {
+                    if (message.parentNode) {
+                        message.parentNode.removeChild(message);
+                    }
+                }, 400); // Durée de l'animation
+            }
+        }
+
+        // Fonction pour ajouter des messages via JavaScript (si nécessaire)
+        function showFlashMessage(text, type = 'info') {
+            const container = document.getElementById('flashMessagesContainer');
+            if (!container) return;
+
+            const alertClass = type === 'error' ? 'danger' : type;
+            const iconClass = type === 'success' ? 'check-circle' : 
+                            (type === 'error' || type === 'danger' ? 'exclamation-triangle' : 
+                            (type === 'warning' ? 'exclamation-circle' : 'info-circle'));
+
+            const messageEl = document.createElement('div');
+            messageEl.className = `alert flash-message alert-${alertClass} fade show`;
+            messageEl.setAttribute('role', 'alert');
+            messageEl.setAttribute('data-auto-dismiss', 'true');
+            
+            messageEl.innerHTML = `
+                <div class="alert-content">
+                    <i class="alert-icon fas fa-${iconClass}"></i>
+                    <span class="alert-text">${text}</span>
+                    <button type="button" class="btn-close" aria-label="Close"></button>
+                </div>
+                <div class="auto-dismiss-progress"></div>
+            `;
+
+            container.appendChild(messageEl);
+
+            // Auto dismiss
+            setTimeout(() => {
+                dismissFlashMessage(messageEl);
+            }, 5000);
+
+            // Gestion du clic sur close
+            const closeBtn = messageEl.querySelector('.btn-close');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    dismissFlashMessage(messageEl);
+                });
+            }
+        }
+
+        function setupMenuActiveStates() {
+            const currentRoute = '{{ app.request.get('_route') }}';
+            
+            // Supprimer toutes les classes has-active-child existantes
+            document.querySelectorAll('.nav-item.dropdown.has-active-child').forEach(item => {
+                item.classList.remove('has-active-child');
+            });
+            
+            // Ajouter has-active-child selon la route actuelle
+            if (currentRoute.startsWith('admin_project')) {
+                const projectDropdown = document.querySelector('[data-dropdown="projects"]').closest('.nav-item.dropdown');
+                if (projectDropdown) {
+                    projectDropdown.classList.add('has-active-child');
+                    const dropdownMenu = projectDropdown.querySelector('.dropdown-menu');
+                    if (dropdownMenu) {
+                        dropdownMenu.classList.add('show');
+                        projectDropdown.classList.add('open');
+                    }
+                }
+            } else if (currentRoute.startsWith('admin_document')) {
+                const documentDropdown = document.querySelector('[data-dropdown="documents"]').closest('.nav-item.dropdown');
+                if (documentDropdown) {
+                    documentDropdown.classList.add('has-active-child');
+                    const dropdownMenu = documentDropdown.querySelector('.dropdown-menu');
+                    if (dropdownMenu) {
+                        dropdownMenu.classList.add('show');
+                        documentDropdown.classList.add('open');
+                    }
+                }
+            } else if (currentRoute.startsWith('admin_request')) {
+                    const requestDropdown = document.querySelector('[data-dropdown="requests"]').closest('.nav-item.dropdown');
+                    if (requestDropdown) {
+                        requestDropdown.classList.add('has-active-child');
+                        const dropdownMenu = requestDropdown.querySelector('.dropdown-menu');
+                        if (dropdownMenu) {
+                            dropdownMenu.classList.add('show');
+                            requestDropdown.classList.add('open');
+                        }
+                    }
+            } else if (currentRoute.startsWith('admin_procedure')) {
+                    const procedureDropdown = document.querySelector('[data-dropdown="procedures"]').closest('.nav-item.dropdown');
+                    if (procedureDropdown) {
+                        procedureDropdown.classList.add('has-active-child');
+                        const dropdownMenu = procedureDropdown.querySelector('.dropdown-menu');
+                        if (dropdownMenu) {
+                            dropdownMenu.classList.add('show');
+                            procedureDropdown.classList.add('open');
+                        }
+                    }
+            } else if (currentRoute.startsWith('admin_family')) {
+                    const familyDropdown = document.querySelector('[data-dropdown="families"]').closest('.nav-item.dropdown');
+                    if (familyDropdown) {
+                        familyDropdown.classList.add('has-active-child');
+                        const dropdownMenu = familyDropdown.querySelector('.dropdown-menu');
+                        if (dropdownMenu) {
+                            dropdownMenu.classList.add('show');
+                            familyDropdown.classList.add('open');
+                        }
+                    }
+            } else if (currentRoute.startsWith('admin_user')) {
+                    const userDropdown = document.querySelector('[data-dropdown="users"]').closest('.nav-item.dropdown');
+                    if (userDropdown) {
+                        userDropdown.classList.add('has-active-child');
+                        const dropdownMenu = userDropdown.querySelector('.dropdown-menu');
+                        if (dropdownMenu) {
+                            dropdownMenu.classList.add('show');
+                            userDropdown.classList.add('open');
+                        }
+                    }
+            } else if (currentRoute.startsWith('admin_role')) {
+                    const roleDropdown = document.querySelector('[data-dropdown="roles"]').closest('.nav-item.dropdown');
+                    if (roleDropdown) {
+                        roleDropdown.classList.add('has-active-child');
+                        const dropdownMenu = roleDropdown.querySelector('.dropdown-menu');
+                        if (dropdownMenu) {
+                            dropdownMenu.classList.add('show');
+                            roleDropdown.classList.add('open');
+                        }
+                    }
+            }
+            
+        }
+
+        // Exposer la fonction globalement pour les autres scripts
+        window.showFlashMessage = showFlashMessage;
+        window.dismissFlashMessage = dismissFlashMessage;
+    </script>
+
+    {% block javascripts %}
+        {{ encore_entry_script_tags('admin') }}
+    {% endblock %}
+</body>
+</html>

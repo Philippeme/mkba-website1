@@ -1,0 +1,802 @@
+/* animations.css - Effets visuels et transitions (version corrigée avec nouveau header) */
+
+/* Animation de l'en-tête lors du défilement */
+header {
+    transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+        padding 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+header.scrolled {
+    background-color: var(--primary-color);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    padding: 10px 0;
+}
+
+/* Animations pour le nouveau header layout */
+.header-right-section {
+    transition: all 0.3s ease;
+}
+
+.header-top-elements {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.header-bottom-elements {
+    transition: transform 0.3s ease;
+}
+
+/* Animation des icônes sociales */
+.social-icons a {
+    transition: color 0.3s ease, transform 0.3s ease;
+    position: relative;
+}
+
+.social-icons a::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: rgba(241, 130, 33, 0.1);
+    transform: translate(-50%, -50%) scale(0);
+    transition: transform 0.3s ease;
+}
+
+.social-icons a:hover {
+    transform: translateY(-3px);
+    color: var(--secondary-color);
+}
+
+.social-icons a:hover::before {
+    transform: translate(-50%, -50%) scale(1);
+}
+
+/* Animation du sélecteur de langue */
+.lang-selector a {
+    transition: color 0.3s ease, transform 0.3s ease;
+    position: relative;
+}
+
+.lang-selector a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: var(--secondary-color);
+    transition: width 0.3s ease;
+}
+
+.lang-selector a:hover::after {
+    width: 100%;
+}
+
+.lang-selector a:hover {
+    color: var(--secondary-color);
+}
+
+/* Animation des cartes au survol avec effet moderne */
+.project-card,
+.service-card,
+.news-card {
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+        box-shadow 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+}
+
+.project-card::after,
+.service-card::after,
+.news-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.6s ease;
+}
+
+.project-card:hover,
+.service-card:hover,
+.news-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+}
+
+.project-card:hover::after,
+.service-card:hover::after,
+.news-card:hover::after {
+    left: 100%;
+}
+
+/* Animation du bouton Primary avec effet ondulation */
+.btn-primary {
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    transition: all 0.3s ease;
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+}
+
+.btn-primary::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background-color: var(--secondary-color);
+    transition: left 0.3s ease;
+    z-index: -1;
+}
+
+.btn-primary:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn-primary:hover::after {
+    left: 0;
+}
+
+/* Animation du bouton Outline Light */
+.btn-outline-light {
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-light::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background-color: var(--white);
+    transition: all 0.3s ease;
+    z-index: -1;
+}
+
+.btn-outline-light:hover {
+    color: var(--primary-color);
+    border-color: var(--white);
+}
+
+.btn-outline-light:hover::before {
+    left: 0;
+}
+
+/* CORRECTION PRINCIPALE: Animation du menu déroulant avec flèche correctement positionnée */
+.has-dropdown {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.has-dropdown>a {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+}
+
+/* La flèche est maintenant correctement positionnée */
+.has-dropdown::after {
+    content: '';
+    display: inline-block;
+    width: 0;
+    height: 0;
+    margin-left: 8px;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 6px solid var(--white);
+    vertical-align: middle;
+    transition: transform 0.3s ease, border-top-color 0.3s ease;
+    position: relative;
+    top: -1px;
+}
+
+.has-dropdown:hover::after,
+.has-dropdown.active::after {
+    transform: rotate(180deg);
+    border-top-color: var(--secondary-color);
+}
+
+/* Animation améliorée du dropdown menu */
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    min-width: 240px;
+    background-color: var(--white);
+    border-radius: 10px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    z-index: 100;
+    padding: 10px 0;
+    margin-top: 15px;
+    overflow: hidden;
+}
+
+.has-dropdown:hover .dropdown-menu,
+.has-dropdown.active .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Animation des items du dropdown */
+.dropdown-menu ul li {
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: all 0.3s ease;
+}
+
+.has-dropdown:hover .dropdown-menu ul li {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.has-dropdown:hover .dropdown-menu ul li:nth-child(1) {
+    transition-delay: 0.1s;
+}
+
+.has-dropdown:hover .dropdown-menu ul li:nth-child(2) {
+    transition-delay: 0.15s;
+}
+
+.has-dropdown:hover .dropdown-menu ul li:nth-child(3) {
+    transition-delay: 0.2s;
+}
+
+.has-dropdown:hover .dropdown-menu ul li:nth-child(4) {
+    transition-delay: 0.25s;
+}
+
+.has-dropdown:hover .dropdown-menu ul li:nth-child(5) {
+    transition-delay: 0.3s;
+}
+
+/* Animation du menu mobile */
+.mobile-menu {
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-menu.active {
+    transform: translateX(0);
+}
+
+.mobile-menu-toggle span {
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.mobile-menu-toggle.active span:nth-child(1) {
+    transform: rotate(45deg) translate(8px, 8px);
+}
+
+.mobile-menu-toggle.active span:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0);
+}
+
+.mobile-menu-toggle.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -6px);
+}
+
+/* Animation du slider principal avec effet Ken Burns */
+.slide-image {
+    animation: kenBurns 25s infinite;
+}
+
+@keyframes kenBurns {
+    0% {
+        transform: scale(1) translateX(0);
+    }
+
+    50% {
+        transform: scale(1.2) translateX(-5%);
+    }
+
+    100% {
+        transform: scale(1) translateX(0);
+    }
+}
+
+.slick-active .slide-image {
+    animation-play-state: running;
+}
+
+/* Animation des dots des sliders avec effet pulse */
+.slider-dots .dot {
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.slider-dots .dot::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%) scale(0);
+    transition: transform 0.3s ease;
+}
+
+.slider-dots .dot.active {
+    transform: scale(1.3);
+}
+
+.slider-dots .dot.active::before {
+    transform: translate(-50%, -50%) scale(1);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: translate(-50%, -50%) scale(1.5);
+        opacity: 0.5;
+    }
+
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+/* Animation de fade-in pour les sections avec effet parallaxe */
+[data-aos] {
+    opacity: 0;
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+[data-aos="fade-up"] {
+    transform: translateY(40px);
+}
+
+[data-aos="fade-down"] {
+    transform: translateY(-40px);
+}
+
+[data-aos="fade-right"] {
+    transform: translateX(-40px);
+}
+
+[data-aos="fade-left"] {
+    transform: translateX(40px);
+}
+
+[data-aos].aos-animate {
+    opacity: 1;
+    transform: translate(0);
+}
+
+/* Animation des statistiques avec effet de compteur */
+.stat-number {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.stat-number.animated {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Animation améliorée pour les éléments de la carte */
+.leaflet-marker-icon {
+    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.leaflet-marker-icon:hover {
+    transform: scale(1.3) translateY(-5px);
+}
+
+/* Animation des popups de la carte avec effet moderne */
+.map-info-popup {
+    opacity: 0;
+    transform: translateY(20px) scale(0.8);
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.map-info-popup.active {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* Animation des cercles de pays sur la carte */
+.leaflet-interactive {
+    transition: all 0.3s ease;
+}
+
+/* Animation de rotation moderne */
+.rotating-icon {
+    transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.rotating-icon:hover {
+    transform: rotate(360deg);
+}
+
+/* Animation pour les logos partenaires avec effet 3D */
+.partner-logo {
+    perspective: 1000px;
+}
+
+.partner-logo img {
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transform-style: preserve-3d;
+}
+
+.partner-logo:hover img {
+    filter: grayscale(0);
+    opacity: 1;
+    transform: rotateY(360deg) scale(1.1);
+}
+
+/* Animation des liens du footer avec effet underline créatif */
+.footer-menu ul li a,
+.footer-links li a,
+.footer-nav li a {
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+.footer-menu ul li a::before,
+.footer-links li a::before,
+.footer-nav li a::before {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+    transition: width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.footer-menu ul li a:hover::before,
+.footer-links li a:hover::before,
+.footer-nav li a:hover::before {
+    width: 100%;
+}
+
+/* Animation des boutons du slider avec effet bounce */
+.slider-controls button {
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.slider-controls button:hover {
+    transform: scale(1.3);
+    color: var(--secondary-color);
+}
+
+.slider-controls button:active {
+    transform: scale(1.1);
+}
+
+/* Animation des formulaires avec effet moderne */
+.form-control {
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(26, 75, 143, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Animation du bouton de réinitialisation avec effet ripple */
+.btn-block {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-block::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+}
+
+.btn-block:active::after {
+    width: 400px;
+    height: 400px;
+}
+
+/* Animations de chargement de page avec timing moderne */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        transform: translateY(60px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        transform: translateX(-60px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(60px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Animation du compteur pour les statistiques avec effet moderne */
+@keyframes countUp {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.8);
+    }
+
+    50% {
+        transform: translateY(-5px) scale(1.05);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.stat-number.animated {
+    animation: countUp 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+/* Animation pour les cartes de service avec overlay créatif */
+.service-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.service-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(26, 75, 143, 0.1) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: 1;
+}
+
+.service-card:hover::before {
+    opacity: 1;
+}
+
+.service-card .service-title {
+    z-index: 2;
+}
+
+/* Animation pour les flèches des boutons avec effet élastique */
+.btn-outline-light i,
+.more-section .btn i {
+    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    display: inline-block;
+    margin-left: 5px;
+}
+
+.btn-outline-light:hover i,
+.more-section .btn:hover i {
+    transform: translateX(8px);
+}
+
+/* Animation pour le survol des experts avec effet moderne */
+.expert-info {
+    position: relative;
+    overflow: hidden;
+}
+
+.expert-info::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    transition: left 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.expert-slide:hover .expert-info::before {
+    left: 0;
+}
+
+/* Animation spéciale pour le header des experts */
+.expert-header {
+    transition: all 0.3s ease;
+}
+
+.expert-social a {
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    position: relative;
+    overflow: hidden;
+}
+
+.expert-social a::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+}
+
+.expert-social a:hover {
+    background-color: var(--secondary-color);
+    transform: scale(1.2) rotate(360deg);
+}
+
+.expert-social a:hover::before {
+    width: 100px;
+    height: 100px;
+}
+
+/* Animation moderne pour le footer avec séparateurs */
+.footer-nav li.separator,
+.footer-links li.separator {
+    transition: opacity 0.3s ease;
+}
+
+.footer-column-separator::before {
+    transition: background-color 0.3s ease, height 0.3s ease;
+}
+
+.footer-column-separator:hover::before {
+    background-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Animations responsive pour mobile avec effets modernes */
+@media (max-width: 767px) {
+    .header-top-elements {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    .header-bottom-elements {
+        justify-content: center;
+    }
+
+    .mobile-menu-toggle:hover {
+        transform: scale(1.1);
+    }
+
+    .mobile-menu-toggle:active {
+        transform: scale(0.95);
+    }
+}
+
+/* Animation pour les popups de carte personnalisées */
+.country-flag img {
+    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.country-flag:hover img {
+    transform: scale(1.2) rotate(5deg);
+}
+
+.country-stats .stat {
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.country-stats .stat:hover {
+    color: var(--primary-color);
+    transform: translateX(5px);
+}
+
+/* Animation pour les marqueurs de projets sur la carte avec effet moderne */
+.project-marker .marker-icon {
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.project-marker:hover .marker-icon {
+    animation-play-state: paused;
+}
+
+/* Effet de chargement global pour améliorer l'expérience */
+body {
+    animation: fadeIn 0.8s ease;
+}
+
+/* Amélioration des transitions globales */
+* {
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Désactivation des animations pour les utilisateurs qui préfèrent moins de mouvement */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

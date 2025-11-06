@@ -1,0 +1,1747 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Modifier {{ project.getName(currentLocale) ?: project.code }} - MK BA{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    
+    <style>
+        :root {
+            --mk-primary: #6d5192;
+            --mk-secondary: #8e32e9;
+            --mk-orange: #f18221;
+            --mk-blue: #0071BC;
+            --mk-dark: #1c273c;
+            --mk-success: #10b981;
+            --mk-warning: #f59e0b;
+            --mk-danger: #ef4444;
+            --mk-info: #3b82f6;
+            --mk-light: #f8f9fa;
+            --mk-lighter: #ffffff;
+            --mk-gradient-primary: linear-gradient(135deg, #f18221 0%, #0071BC 100%);
+        }
+
+        .project-form-header {
+            background: var(--mk-gradient-primary);
+            color: white;
+            padding: 2.5rem 0;
+            margin: -2rem -2rem 0 -2rem;
+            position: relative;
+            overflow: hidden;
+            z-index: 50;
+        }
+
+        .project-form-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>') repeat;
+            opacity: 0.3;
+        }
+
+        .steps-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 20px 0;
+            margin: 30px 0 0 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 123px;
+            z-index: 98;
+            overflow: hidden;
+        }
+
+        .steps-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            flex: 1;
+        }
+
+        .step-item {
+            display: flex;
+            align-items: flex-start;
+            position: relative;
+            flex: 1;
+            max-width: 200px;
+            justify-content: center;
+        }
+
+        .step-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: -50%;
+            top: 25px;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, #e5e7eb 0%, transparent 100%);
+            z-index: 0;
+        }
+
+        .step-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            min-height: 80px;
+        }
+
+        .step-number {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            color: var(--mk-gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+            position: relative;
+            border: 2px solid transparent;
+            flex-shrink: 0;
+        }
+
+        .step-item.active .step-number {
+            background: var(--mk-primary);
+            color: white;
+            border-color: var(--mk-primary);
+            box-shadow: 0 0 0 3px rgba(109, 81, 146, 0.2);
+        }
+
+        .step-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--mk-gray);
+            text-align: center;
+            transition: all 0.3s ease;
+            line-height: 1.2;
+        }
+
+        .step-item.active .step-label {
+            color: var(--mk-primary);
+            font-weight: 600;
+        }
+
+        .step-optional {
+            font-size: 10px;
+            color: var(--mk-gray-light);
+            font-style: italic;
+            margin-top: 2px;
+            line-height: 1.1;
+        }
+
+        .language-switcher {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 8px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.15);
+            padding: 6px;
+            display: flex;
+            gap: 4px;
+            border: 1px solid rgba(109, 81, 146, 0.2);
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+
+        .lang-btn {
+            background: transparent;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            color: var(--mk-gray);
+            position: relative;
+        }
+
+        .lang-btn.active {
+            background: var(--mk-primary);
+            color: white;
+        }
+
+        .lang-btn:hover:not(.active) {
+            background: var(--mk-light);
+        }
+
+        .translation-status-indicator {
+            position: absolute;
+            top: -3px;
+            right: -3px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid white;
+            font-size: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .translation-complete {
+            background: var(--mk-success);
+            color: white;
+        }
+
+        .translation-incomplete {
+            background: var(--mk-warning);
+            color: white;
+        }
+
+        .translation-missing {
+            background: var(--mk-danger);
+            color: white;
+        }
+
+        .translation-notice {
+            background: linear-gradient(45deg, #e3f2fd, #bbdefb);
+            border: 1px solid #2196f3;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            color: #1976d2;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .translation-notice.edit-mode {
+            background: linear-gradient(45deg, #fff3cd, #ffeaa7);
+            border-color: #ffc107;
+            color: #856404;
+        }
+
+        .translation-notice.missing-mode {
+            background: linear-gradient(45deg, #f8d7da, #f5c6cb);
+            border-color: #dc3545;
+            color: #721c24;
+        }
+
+        .translation-notice::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: #2196f3;
+        }
+
+        .translation-notice.edit-mode::before {
+            background: #ffc107;
+        }
+
+        .translation-notice.missing-mode::before {
+            background: #dc3545;
+        }
+
+        .translation-notice .notice-icon {
+            font-size: 1.5rem;
+            margin-right: 15px;
+        }
+
+        .translation-notice .notice-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .translation-notice .notice-text {
+            flex: 1;
+        }
+
+        .translation-notice .notice-title {
+            font-weight: 700;
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+
+        .translation-notice .notice-description {
+            margin-bottom: 0;
+            opacity: 0.9;
+        }
+
+        .btn-copy-translation {
+            background: var(--mk-info);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 20px;
+        }
+
+        .btn-copy-translation:hover {
+            background: #2563eb;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .section-header {
+            border-bottom: 2px solid rgba(109, 81, 146, 0.1);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--mk-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-steps-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 40px;
+            margin: 30px 0;
+            min-height: 400px;
+            position: relative;
+        }
+
+        .main-content-wrapper {
+            padding-top: 0;
+        }
+
+        .form-step {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .form-step.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .step-title {
+            color: var(--mk-primary);
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .step-description {
+            color: var(--mk-gray);
+            margin-bottom: 30px;
+            font-size: 15px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--mk-dark);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .form-label .required-indicator {
+            color: var(--mk-danger);
+            font-weight: bold;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .form-control, .form-select {
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 12px 16px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--mk-primary);
+            box-shadow: 0 0 0 0.2rem rgba(109, 81, 146, 0.15);
+            outline: none;
+        }
+
+        .help-text {
+            font-size: 13px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .translatable-field {
+            position: relative;
+        }
+
+        .translatable-indicator {
+            position: absolute;
+            top: 8px;
+            right: 10px;
+            color: var(--mk-primary);
+            font-size: 14px;
+            z-index: 10;
+        }
+
+        .field-status {
+            position: absolute;
+            top: 8px;
+            right: 35px;
+            z-index: 10;
+        }
+
+        .field-status.filled {
+            color: var(--mk-success);
+        }
+
+        .field-status.empty {
+            color: var(--mk-danger);
+        }
+
+        .collection-container {
+            border: 2px dashed #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            background: #fafbfc;
+            margin-bottom: 20px;
+        }
+
+        .collection-item {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .collection-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .btn-remove-item {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--mk-danger);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-remove-item:hover {
+            background: #dc2626;
+            transform: scale(1.05);
+        }
+
+        .btn-add-item {
+            background: var(--mk-success);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-add-item:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Styles pour l'upload de fichiers */
+        .file-upload-area {
+            border: 3px dashed #e5e7eb;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            background: #fafbfc;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .file-upload-area:hover {
+            border-color: var(--mk-primary);
+            background: rgba(109, 81, 146, 0.02);
+        }
+
+        .file-upload-area.dragover {
+            border-color: var(--mk-primary);
+            background: rgba(109, 81, 146, 0.05);
+            transform: scale(1.02);
+        }
+
+        .file-upload-icon {
+            font-size: 48px;
+            color: var(--mk-gray-light);
+            margin-bottom: 15px;
+        }
+
+        .file-input-hidden {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+            width: 1px;
+            height: 1px;
+        }
+
+        .existing-attachments {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .existing-attachment {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .attachment-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .attachment-icon {
+            font-size: 24px;
+            color: var(--mk-primary);
+        }
+
+        .attachment-details {
+            text-align: left;
+        }
+
+        .attachment-name {
+            font-weight: 600;
+            color: var(--mk-dark);
+            font-size: 14px;
+        }
+
+        .attachment-meta {
+            font-size: 12px;
+            color: var(--mk-gray);
+        }
+
+        .btn-remove-existing {
+            background: var(--mk-warning);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .btn-download-existing {
+            background: var(--mk-info);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            margin-right: 5px;
+        }
+
+        .files-preview {
+            margin-top: 20px;
+        }
+
+        .file-preview-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .file-preview-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .file-preview-icon {
+            font-size: 24px;
+            color: var(--mk-primary);
+        }
+
+        .file-preview-details {
+            text-align: left;
+        }
+
+        .file-preview-name {
+            font-weight: 600;
+            color: var(--mk-dark);
+            font-size: 14px;
+        }
+
+        .file-preview-size {
+            font-size: 12px;
+            color: var(--mk-gray);
+        }
+
+        .btn-remove-file-preview {
+            background: var(--mk-danger);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .save-button-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 30px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .btn-save-project {
+            background: var(--mk-gradient-primary);
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-save-project:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(109, 81, 146, 0.3);
+            color: white;
+        }
+
+        .btn-cancel {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .btn-cancel:hover {
+            background: #5a6268;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .is-invalid {
+            border-color: var(--mk-danger);
+            box-shadow: 0 0 0 0.2rem rgba(239, 68, 68, 0.25);
+        }
+
+        .invalid-feedback {
+            color: var(--mk-danger);
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .steps-navigation {
+                padding: 15px 10px;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .steps-container {
+                order: 2;
+            }
+
+            .language-switcher {
+                order: 1;
+                margin-right: 0;
+                align-self: flex-end;
+            }
+
+            .step-label {
+                font-size: 11px;
+            }
+
+            .step-number {
+                width: 30px;
+                height: 30px;
+                font-size: 12px;
+            }
+
+            .form-steps-container {
+                padding: 20px;
+            }
+
+            .lang-btn {
+                padding: 4px 8px;
+                font-size: 11px;
+            }
+
+            .save-button-container {
+                flex-direction: column;
+            }
+
+            .translation-notice .notice-content {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .btn-copy-translation {
+                margin-left: 0;
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+
+<!-- Header -->
+<div class="project-form-header">
+    <div class="container-fluid position-relative">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2">
+                    <i class="bi-pencil-square me-3"></i>
+                    Modifier le projet
+                </h1>
+                <p class="mb-0">{{ project.getName(currentLocale) ?: project.code }} - Langue : <strong>{{ currentLocale|upper }}</strong></p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{{ path('admin_project_show', {id: project.id}) }}" class="btn btn-outline-light">
+                    <i class="bi-arrow-left me-2"></i>
+                    Retour aux détails
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Navigation par étapes avec bouton de langue intégré -->
+<div class="steps-navigation" id="stepsNavigation">
+    <div class="scroll-indicator"></div>
+    
+    <div class="steps-container">
+        <div class="step-item active" data-step="1">
+            <button type="button" class="step-button" data-step-btn="1">
+                <div class="step-number">
+                    <span>1</span>
+                </div>
+                <div class="step-label">Identification</div>
+            </button>
+        </div>
+
+        <div class="step-item" data-step="2">
+            <button type="button" class="step-button" data-step-btn="2">
+                <div class="step-number">
+                    <span>2</span>
+                </div>
+                <div class="step-label">Membres</div>
+                <small class="step-optional">({{ project.members|length }})</small>
+            </button>
+        </div>
+
+        <div class="step-item" data-step="3">
+            <button type="button" class="step-button" data-step-btn="3">
+                <div class="step-number">
+                    <span>3</span>
+                </div>
+                <div class="step-label">Liens</div>
+                <small class="step-optional">({{ project.links|length }})</small>
+            </button>
+        </div>
+
+        <div class="step-item" data-step="4">
+            <button type="button" class="step-button" data-step-btn="4">
+                <div class="step-number">
+                    <span>4</span>
+                </div>
+                <div class="step-label">Pièces jointes</div>
+                <small class="step-optional">({{ project.attachments|length }})</small>
+            </button>
+        </div>
+    </div>
+
+    <!-- Bouton de langue repositionné à droite de la navigation -->
+    <div class="language-switcher">
+        {% for locale in ['fr', 'en'] %}
+            <button class="lang-btn {{ currentLocale == locale ? 'active' : '' }}" data-lang="{{ locale }}" type="button">
+                {{ locale|upper }}
+                {% set translation = project.getTranslation(locale) %}
+                {% if translation and translation.name %}
+                    <span class="translation-status-indicator translation-complete" title="Traduction {{ locale == 'fr' ? 'française' : 'anglaise' }} complète">✓</span>
+                {% elseif translation %}
+                    <span class="translation-status-indicator translation-incomplete" title="Traduction {{ locale == 'fr' ? 'française' : 'anglaise' }} incomplète">!</span>
+                {% else %}
+                    <span class="translation-status-indicator translation-missing" title="Traduction {{ locale == 'fr' ? 'française' : 'anglaise' }} manquante">×</span>
+                {% endif %}
+            </button>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="container-fluid main-content-wrapper">
+    {{ form_start(form, {'attr': {'id': 'projectForm', 'novalidate': 'novalidate', 'enctype': 'multipart/form-data'}}) }}
+        <div class="form-steps-container">
+            
+            <!-- Notice de traduction dynamique -->
+            {% set currentTranslation = project.getTranslation(currentLocale) %}
+            {% if currentTranslation and currentTranslation.name %}
+                <div class="translation-notice edit-mode">
+                    <div class="notice-content">
+                        <div style="display: flex; align-items: center;">
+                            <i class="fas fa-edit notice-icon"></i>
+                            <div class="notice-text">
+                                <div class="notice-title">
+                                    Modification de la traduction {{ currentLocale|upper }}
+                                </div>
+                                <div class="notice-description">
+                                    Vous modifiez actuellement la version {{ currentLocale == 'fr' ? 'française' : 'anglaise' }} 
+                                    de ce projet. Les modifications seront appliquées uniquement à cette langue.
+                                </div>
+                            </div>
+                        </div>
+                        {% if currentLocale == 'fr' and project.getTranslation('en') and project.getTranslation('en').name %}
+                            <button type="button" class="btn-copy-translation" onclick="copyFromEnglish()">
+                                <i class="fas fa-copy"></i>
+                                Copier depuis EN
+                            </button>
+                        {% elseif currentLocale == 'en' and project.getTranslation('fr') and project.getTranslation('fr').name %}
+                            <button type="button" class="btn-copy-translation" onclick="copyFromFrench()">
+                                <i class="fas fa-copy"></i>
+                                Copier depuis FR
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="translation-notice missing-mode">
+                    <div class="notice-content">
+                        <div style="display: flex; align-items: center;">
+                            <i class="fas fa-plus-circle notice-icon"></i>
+                            <div class="notice-text">
+                                <div class="notice-title">
+                                    Création de la traduction {{ currentLocale|upper }}
+                                </div>
+                                <div class="notice-description">
+                                    Cette traduction n'existe pas encore. Remplissez les champs ci-dessous pour créer 
+                                    la version {{ currentLocale == 'fr' ? 'française' : 'anglaise' }} de ce projet.
+                                </div>
+                            </div>
+                        </div>
+                        {% if currentLocale == 'en' and project.getTranslation('fr') and project.getTranslation('fr').name %}
+                            <button type="button" class="btn-copy-translation" onclick="copyFromFrench()">
+                                <i class="fas fa-copy"></i>
+                                Copier depuis FR
+                            </button>
+                        {% elseif currentLocale == 'fr' and project.getTranslation('en') and project.getTranslation('en').name %}
+                            <button type="button" class="btn-copy-translation" onclick="copyFromEnglish()">
+                                <i class="fas fa-copy"></i>
+                                Copier depuis EN
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+            
+            <!-- ÉTAPE 1: IDENTIFICATION -->
+            <div class="form-step active" data-step-content="1">
+                <h2 class="step-title">
+                    <i class="bi-card-text text-primary"></i>
+                    Identification du projet
+                </h2>
+                <p class="step-description">
+                    Modifiez les informations principales de votre projet dans la langue souhaitée
+                </p>
+
+                <div class="form-section">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3 translatable-field">
+                                <label class="form-label">
+                                    Nom du projet
+                                    <span class="required-indicator">*</span>
+                                </label>
+                                <i class="fas fa-language translatable-indicator" title="Champ traduisible"></i>
+                                <i class="fas fa-circle field-status" id="nameStatus"></i>
+                                {{ form_widget(form.translation.name, {'attr': {'class': 'form-control', 'data-translatable': 'true', 'value': currentTranslation ? currentTranslation.name : '', 'placeholder': 'Nom du projet '}}) }}
+                                {{ form_help(form.translation.name) }}
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    Code du projet (unique)
+                                    <span class="required-indicator">*</span>
+                                </label>
+                                {{ form_widget(form.code, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_help(form.code) }}
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(form.category) }}
+                                <span class="required-indicator">*</span>
+                                {{ form_widget(form.category, {'attr': {'class': 'form-select'}}) }}
+                                <div class="invalid-feedback"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(form.priority) }}
+                                {{ form_widget(form.priority, {'attr': {'class': 'form-select'}}) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 translatable-field">
+                        <label class="form-label">
+                            Description
+                            <span class="required-indicator">*</span>
+                        </label>
+                        <i class="fas fa-language translatable-indicator" title="Champ traduisible"></i>
+                        <i class="fas fa-circle field-status" id="descriptionStatus"></i>
+                        {{ form_widget(form.translation.description, {'attr': {'class': 'form-control', 'data-translatable': 'true', 'value': currentTranslation ? currentTranslation.description : '', 'placeholder': 'Décrivez le projet'}}) }}
+                        {{ form_help(form.translation.description) }}
+                        <div class="invalid-feedback"></div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                {{ form_label(form.startDate) }}
+                                {{ form_widget(form.startDate, {'attr': {'class': 'form-control'}}) }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                {{ form_label(form.endDate) }}
+                                {{ form_widget(form.endDate, {'attr': {'class': 'form-control'}}) }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                {{ form_label(form.budget) }}
+                                {{ form_widget(form.budget, {'attr': {'class': 'form-control'}}) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(form.responsible) }}
+                                {{ form_widget(form.responsible, {'attr': {'class': 'form-control'}}) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(form.department) }}
+                                {{ form_widget(form.department, {'attr': {'class': 'form-select'}}) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                {{ form_label(form.status) }}
+                                {{ form_widget(form.status, {'attr': {'class': 'form-select'}}) }}
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                {{ form_label(form.displayOrder) }}
+                                {{ form_widget(form.displayOrder, {'attr': {'class': 'form-control'}}) }}
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3 d-flex align-items-end">
+                                <div class="form-check form-switch">
+                                    {{ form_widget(form.isActive, {'attr': {'class': 'form-check-input'}}) }}
+                                    {{ form_label(form.isActive, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ÉTAPE 2: MEMBRES -->
+            <div class="form-step" data-step-content="2">
+                <h2 class="step-title">
+                    <i class="bi-people text-primary"></i>
+                    Membres du projet
+                </h2>
+                <p class="step-description">
+                    Gérez les membres qui participent au projet
+                </p>
+
+                <div class="form-section">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="section-title">
+                            <i class="bi-person-plus"></i>
+                            Équipe projet
+                        </h4>
+                        <button type="button" class="btn-add-item" onclick="addMember()">
+                            <i class="bi-plus-circle"></i>
+                            Ajouter un membre
+                        </button>
+                    </div>
+
+                    <div class="collection-container" id="membersCollection">
+                        {% for member in project.members %}
+                            <div class="collection-item">
+                                <button type="button" class="btn-remove-item" onclick="removeMember(this)">
+                                    <i class="bi-trash"></i>
+                                </button>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Nom complet</label>
+                                        <input type="text" class="form-control" name="members[{{ loop.index0 }}][name]" value="{{ member.name }}" placeholder="Nom du membre">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" class="form-control" name="members[{{ loop.index0 }}][email]" value="{{ member.email }}" placeholder="email@example.com">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Rôle</label>
+                                        <select class="form-select" name="members[{{ loop.index0 }}][role]">
+                                            <option value="">Sélectionnez un rôle</option>
+                                            <option value="developer" {{ member.role == 'developer' ? 'selected' : '' }}>Développeur</option>
+                                            <option value="designer" {{ member.role == 'designer' ? 'selected' : '' }}>Designer</option>
+                                            <option value="manager" {{ member.role == 'manager' ? 'selected' : '' }}>Chef de projet</option>
+                                            <option value="analyst" {{ member.role == 'analyst' ? 'selected' : '' }}>Analyste</option>
+                                            <option value="tester" {{ member.role == 'tester' ? 'selected' : '' }}>Testeur</option>
+                                            <option value="consultant" {{ member.role == 'consultant' ? 'selected' : '' }}>Consultant</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="bi-info-circle me-2"></i>
+                        Vous pouvez ajouter ou supprimer des membres à tout moment.
+                    </div>
+                </div>
+            </div>
+
+            <!-- ÉTAPE 3: LIENS -->
+            <div class="form-step" data-step-content="3">
+                <h2 class="step-title">
+                    <i class="bi-link-45deg text-primary"></i>
+                    Liens et ressources
+                </h2>
+                <p class="step-description">
+                    Gérez les liens vers des ressources externes liées au projet
+                </p>
+
+                <div class="form-section">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="section-title">
+                            <i class="bi-globe"></i>
+                            Liens externes
+                        </h4>
+                        <button type="button" class="btn-add-item" onclick="addLink()">
+                            <i class="bi-plus-circle"></i>
+                            Ajouter un lien
+                        </button>
+                    </div>
+
+                    <div class="collection-container" id="linksCollection">
+                        {% for link in project.links %}
+                            <div class="collection-item">
+                                <button type="button" class="btn-remove-item" onclick="removeLink(this)">
+                                    <i class="bi-trash"></i>
+                                </button>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Titre du lien</label>
+                                        <input type="text" class="form-control" name="links[{{ loop.index0 }}][title]" value="{{ link.title }}" placeholder="Titre du lien">
+                                    </div>
+                                    <div class="col-md-5">
+                                        <label class="form-label">URL</label>
+                                        <input type="url" class="form-control" name="links[{{ loop.index0 }}][url]" value="{{ link.url }}" placeholder="https://example.com">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Type</label>
+                                        <select class="form-select" name="links[{{ loop.index0 }}][type]">
+                                            <option value="">Type de lien</option>
+                                            <option value="documentation" {{ link.type == 'documentation' ? 'selected' : '' }}>Documentation</option>
+                                            <option value="repository" {{ link.type == 'repository' ? 'selected' : '' }}>Repository</option>
+                                            <option value="website" {{ link.type == 'website' ? 'selected' : '' }}>Site web</option>
+                                            <option value="api" {{ link.type == 'api' ? 'selected' : '' }}>API</option>
+                                            <option value="other" {{ link.type == 'other' ? 'selected' : '' }}>Autre</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="bi-info-circle me-2"></i>
+                        Les liens permettent de référencer des ressources externes importantes pour le projet.
+                    </div>
+                </div>
+            </div>
+
+            <!-- ÉTAPE 4: PIÈCES JOINTES -->
+            <div class="form-step" data-step-content="4">
+                <h2 class="step-title">
+                    <i class="bi-paperclip text-primary"></i>
+                    Pièces jointes
+                </h2>
+                <p class="step-description">
+                    Gérez les documents et fichiers relatifs au projet
+                </p>
+
+                <div class="form-section">
+                    <!-- Pièces jointes existantes -->
+                    {% if project.attachments|length > 0 %}
+                    <div class="existing-attachments">
+                        <h5><i class="fas fa-folder-open me-2"></i>Fichiers existants</h5>
+                        {% for attachment in project.attachments %}
+                        <div class="existing-attachment" data-attachment-id="{{ attachment.id }}">
+                            <div class="attachment-info">
+                                <i class="bi-file-earmark attachment-icon"></i>
+                                <div class="attachment-details">
+                                    <div class="attachment-name">{{ attachment.originalName }}</div>
+                                    <div class="attachment-meta">{{ attachment.formattedFileSize }} • {{ attachment.uploadedAt|date('d/m/Y') }}</div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="{{ asset('uploads/projects/' ~ attachment.fileName) }}" 
+                                   class="btn-download-existing" 
+                                   target="_blank"
+                                   download="{{ attachment.originalName }}">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                                <button type="button" class="btn-remove-existing" onclick="removeExistingAttachment({{ attachment.id }}, this)">
+                                    <i class="bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Zone d'upload simplifiée pour nouveaux fichiers -->
+                    <div class="file-upload-area" id="fileUploadArea" onclick="document.getElementById('fileInput').click()">
+                        <i class="bi-cloud-upload file-upload-icon"></i>
+                        <h4>Ajouter de nouveaux fichiers</h4>
+                        <p class="text-muted">Cliquez ici pour parcourir vos fichiers ou glissez-déposez</p>
+                        <button type="button" class="btn btn-outline-primary">
+                            <i class="bi-folder-open me-2"></i>
+                            Parcourir les fichiers
+                        </button>
+                        <p class="help-text mt-3">
+                            Formats acceptés: PDF, Word, Excel, PowerPoint, Images, ZIP (Max 10MB par fichier)
+                        </p>
+                    </div>
+
+                    <input type="file" 
+                           id="fileInput" 
+                           name="files[]" 
+                           multiple 
+                           class="file-input-hidden"
+                           accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.jpg,.jpeg,.png">
+
+                    <!-- Prévisualisation des nouveaux fichiers -->
+                    <div class="files-preview" id="filesPreview" style="display: none;">
+                        <h5><i class="fas fa-paperclip me-2"></i>Nouveaux fichiers sélectionnés</h5>
+                        <div id="filesList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Boutons de sauvegarde -->
+        <div class="save-button-container">
+            <a href="{{ path('admin_project_show', {id: project.id}) }}" class="btn-cancel" onclick="return confirmCancel()">
+                <i class="bi-x-circle"></i>
+                Annuler
+            </a>
+            <button type="submit" class="btn-save-project" id="btnSaveProject">
+                <i class="bi-save"></i>
+                Enregistrer les modifications en {{ currentLocale|upper }}
+            </button>
+        </div>
+
+        <!-- Champs cachés pour les collections et les fichiers supprimés -->
+        <input type="hidden" id="removedAttachments" name="removed_attachments" value="">
+        <div style="display: none;">
+            {{ form_rest(form) }}
+        </div>
+        
+    {{ form_end(form) }}
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <!-- jQuery pour Select2 -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    
+    <script>
+        // Variables globales
+        let currentStep = 1;
+        let currentLang = '{{ currentLocale }}';
+        let memberIndex = {{ project.members|length }};
+        let linkIndex = {{ project.links|length }};
+        let hasUnsavedChanges = false;
+        let removedAttachments = [];
+        const projectId = {{ project.id }};
+
+        // Données existantes du projet par langue
+        const projectTranslations = {
+            fr: {
+                name: '{{ project.getTranslation("fr") ? project.getTranslation("fr").name|e("js") : "" }}',
+                description: '{{ project.getTranslation("fr") ? project.getTranslation("fr").description|e("js") : "" }}'
+            },
+            en: {
+                name: '{{ project.getTranslation("en") ? project.getTranslation("en").name|e("js") : "" }}',
+                description: '{{ project.getTranslation("en") ? project.getTranslation("en").description|e("js") : "" }}'
+            }
+        };
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeForm();
+            setupEventListeners();
+            setupFileUpload();
+            trackFormChanges();
+            updateFieldStatus();
+            loadTranslationForCurrentLanguage();
+        });
+
+        function initializeForm() {
+            setLanguage(currentLang);
+        }
+
+        function loadTranslationForCurrentLanguage() {
+            const translation = projectTranslations[currentLang];
+            
+            const nameField = document.querySelector('[name="project[translation][name]"]');
+            const descField = document.querySelector('[name="project[translation][description]"]');
+            
+            if (nameField) nameField.value = translation.name || '';
+            if (descField) descField.value = translation.description || '';
+            
+            updateFieldStatus();
+        }
+
+        function updateFieldStatus() {
+            const nameField = document.querySelector('[name="project[translation][name]"]');
+            const descField = document.querySelector('[name="project[translation][description]"]');
+            
+            updateSingleFieldStatus('nameStatus', nameField);
+            updateSingleFieldStatus('descriptionStatus', descField);
+        }
+
+        function updateSingleFieldStatus(statusId, field) {
+            const status = document.getElementById(statusId);
+            if (status && field) {
+                if (field.value && field.value.trim() !== '') {
+                    status.className = 'fas fa-circle field-status filled';
+                    status.title = 'Champ rempli';
+                } else {
+                    status.className = 'fas fa-circle field-status empty';
+                    status.title = 'Champ vide';
+                }
+            }
+        }
+
+        function trackFormChanges() {
+            const form = document.getElementById('projectForm');
+            const inputs = form.querySelectorAll('input, textarea, select');
+            
+            inputs.forEach(input => {
+                input.addEventListener('change', () => {
+                    markAsUnsaved();
+                    updateFieldStatus();
+                });
+                
+                if (input.type === 'text' || input.type === 'email' || input.type === 'url' || input.tagName === 'TEXTAREA') {
+                    input.addEventListener('input', () => {
+                        markAsUnsaved();
+                        updateFieldStatus();
+                    });
+                }
+            });
+        }
+
+        function markAsUnsaved() {
+            hasUnsavedChanges = true;
+        }
+
+        function markAsSaved() {
+            hasUnsavedChanges = false;
+        }
+
+        // Gestion des étapes
+        function goToStep(step) {
+            document.querySelectorAll('[data-step]').forEach(stepItem => {
+                stepItem.classList.remove('active');
+            });
+            
+            document.querySelectorAll('[data-step-content]').forEach(stepContent => {
+                stepContent.classList.remove('active');
+            });
+
+            currentStep = step;
+            document.querySelector(`[data-step-content="${currentStep}"]`).classList.add('active');
+            document.querySelector(`[data-step="${currentStep}"]`).classList.add('active');
+        }
+
+        function setupEventListeners() {
+            // Navigation par étapes
+            document.querySelectorAll('[data-step-btn]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const step = parseInt(this.dataset.stepBtn);
+                    goToStep(step);
+                });
+            });
+
+            // Switch de langue
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const lang = this.dataset.lang;
+                    
+                    if (hasUnsavedChanges && lang !== currentLang) {
+                        if (confirm('Vous avez des modifications non sauvegardées. Changer de langue peut perdre certaines modifications pour cette langue. Continuer ?')) {
+                            switchLanguage(lang);
+                        }
+                    } else {
+                        switchLanguage(lang);
+                    }
+                });
+            });
+
+            // Soumission du formulaire
+            document.getElementById('projectForm').addEventListener('submit', handleFormSubmit);
+
+            // Avertir avant de quitter
+            window.addEventListener('beforeunload', (e) => {
+                if (hasUnsavedChanges) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            });
+        }
+
+        function switchLanguage(lang) {
+            if (lang === currentLang) return;
+            
+            // Rediriger vers la même page avec la nouvelle locale
+            const url = new URL(window.location);
+            url.searchParams.set('locale', lang);
+            window.location.href = url.toString();
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('mkba_project_lang', lang);
+
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === lang);
+            });
+        }
+
+        // Fonctions de copie entre langues
+        function copyFromFrench() {
+            const frTranslation = projectTranslations.fr;
+            
+            const nameField = document.querySelector('[name="project[translation][name]"]');
+            const descField = document.querySelector('[name="project[translation][description]"]');
+            
+            if (nameField && frTranslation.name) {
+                nameField.value = frTranslation.name;
+            }
+            if (descField && frTranslation.description) {
+                descField.value = frTranslation.description;
+            }
+            
+            updateFieldStatus();
+            markAsUnsaved();
+            // SUPPRIMÉ: showNotification côté client - le message viendra du controller si nécessaire
+        }
+
+        function copyFromEnglish() {
+            const enTranslation = projectTranslations.en;
+            
+            const nameField = document.querySelector('[name="project[translation][name]"]');
+            const descField = document.querySelector('[name="project[translation][description]"]');
+            
+            if (nameField && enTranslation.name) {
+                nameField.value = enTranslation.name;
+            }
+            if (descField && enTranslation.description) {
+                descField.value = enTranslation.description;
+            }
+            
+            updateFieldStatus();
+            markAsUnsaved();
+            // SUPPRIMÉ: showNotification côté client
+        }
+
+        // Gestion des collections
+        function addMember() {
+            const collection = document.getElementById('membersCollection');
+            
+            const wrapper = document.createElement('div');
+            wrapper.className = 'collection-item';
+            wrapper.innerHTML = `
+                <button type="button" class="btn-remove-item" onclick="removeMember(this)">
+                    <i class="bi-trash"></i>
+                </button>
+                <div class="row">
+                    <div class="col-md-4">
+                        <label class="form-label">Nom complet</label>
+                        <input type="text" class="form-control" name="members[${memberIndex}][name]" placeholder="Nom du membre">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" name="members[${memberIndex}][email]" placeholder="email@example.com">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Rôle</label>
+                        <select class="form-select" name="members[${memberIndex}][role]">
+                            <option value="">Sélectionnez un rôle</option>
+                            <option value="developer">Développeur</option>
+                            <option value="designer">Designer</option>
+                            <option value="manager">Chef de projet</option>
+                            <option value="analyst">Analyste</option>
+                            <option value="tester">Testeur</option>
+                            <option value="consultant">Consultant</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+            
+            collection.appendChild(wrapper);
+            memberIndex++;
+            markAsUnsaved();
+            trackFormChanges();
+        }
+
+        function removeMember(button) {
+            button.closest('.collection-item').remove();
+            markAsUnsaved();
+        }
+
+        function addLink() {
+            const collection = document.getElementById('linksCollection');
+            
+            const wrapper = document.createElement('div');
+            wrapper.className = 'collection-item';
+            wrapper.innerHTML = `
+                <button type="button" class="btn-remove-item" onclick="removeLink(this)">
+                    <i class="bi-trash"></i>
+                </button>
+                <div class="row">
+                    <div class="col-md-4">
+                        <label class="form-label">Titre du lien</label>
+                        <input type="text" class="form-control" name="links[${linkIndex}][title]" placeholder="Titre du lien">
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label">URL</label>
+                        <input type="url" class="form-control" name="links[${linkIndex}][url]" placeholder="https://example.com">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Type</label>
+                        <select class="form-select" name="links[${linkIndex}][type]">
+                            <option value="">Type de lien</option>
+                            <option value="documentation">Documentation</option>
+                            <option value="repository">Repository</option>
+                            <option value="website">Site web</option>
+                            <option value="api">API</option>
+                            <option value="other">Autre</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+            
+            collection.appendChild(wrapper);
+            linkIndex++;
+            markAsUnsaved();
+            trackFormChanges();
+        }
+
+        function removeLink(button) {
+            button.closest('.collection-item').remove();
+            markAsUnsaved();
+        }
+
+        // Gestion des fichiers existants
+        function removeExistingAttachment(attachmentId, button) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer ce fichier ?')) {
+                removedAttachments.push(attachmentId);
+                document.getElementById('removedAttachments').value = JSON.stringify(removedAttachments);
+                
+                button.closest('.existing-attachment').remove();
+                markAsUnsaved();
+            }
+        }
+
+        // Gestion des fichiers
+        function setupFileUpload() {
+            const fileUploadArea = document.getElementById('fileUploadArea');
+            const fileInput = document.getElementById('fileInput');
+
+            // Drag & drop
+            fileUploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                fileUploadArea.classList.add('dragover');
+            });
+
+            fileUploadArea.addEventListener('dragleave', () => {
+                fileUploadArea.classList.remove('dragover');
+            });
+
+            fileUploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                fileUploadArea.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                handleFileSelection(files);
+            });
+
+            // Sélection de fichiers
+            fileInput.addEventListener('change', (e) => {
+                handleFileSelection(e.target.files);
+            });
+        }
+
+        function handleFileSelection(files) {
+            if (files.length === 0) return;
+
+            displayFilePreview(files);
+            markAsUnsaved();
+        }
+
+        function displayFilePreview(files) {
+            const filesPreview = document.getElementById('filesPreview');
+            const filesList = document.getElementById('filesList');
+            
+            // Vider la liste précédente
+            filesList.innerHTML = '';
+            
+            Array.from(files).forEach((file, index) => {
+                // Validation côté client basique (la validation principale se fait côté serveur)
+                if (file.size > 10 * 1024 * 1024) {
+                    // SUPPRIMÉ: showNotification côté client
+                    return;
+                }
+
+                const allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'zip', 'jpg', 'jpeg', 'png'];
+                const extension = file.name.split('.').pop().toLowerCase();
+                
+                if (!allowedExtensions.includes(extension)) {
+                    // SUPPRIMÉ: showNotification côté client
+                    return;
+                }
+
+                // Créer l'élément de prévisualisation
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-preview-item';
+                fileItem.innerHTML = `
+                    <div class="file-preview-info">
+                        <i class="bi-file-earmark file-preview-icon"></i>
+                        <div class="file-preview-details">
+                            <div class="file-preview-name">${file.name}</div>
+                            <div class="file-preview-size">${formatFileSize(file.size)}</div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-remove-file-preview" onclick="removeFileFromPreview(this)">
+                        <i class="bi-trash"></i>
+                    </button>
+                `;
+                
+                filesList.appendChild(fileItem);
+            });
+            
+            if (filesList.children.length > 0) {
+                filesPreview.style.display = 'block';
+            }
+        }
+
+        function removeFileFromPreview(button) {
+            const fileItem = button.closest('.file-preview-item');
+            fileItem.remove();
+            
+            // Si plus de fichiers, cacher la prévisualisation
+            const filesList = document.getElementById('filesList');
+            if (filesList.children.length === 0) {
+                document.getElementById('filesPreview').style.display = 'none';
+                document.getElementById('fileInput').value = '';
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Soumission du formulaire
+        function handleFormSubmit(e) {
+            if (!validateForm()) {
+                e.preventDefault();
+                return false;
+            }
+            
+            // Ajouter la locale et les données de traduction dans des champs cachés
+            const localeInput = document.createElement('input');
+            localeInput.type = 'hidden';
+            localeInput.name = 'locale';
+            localeInput.value = currentLang;
+            e.target.appendChild(localeInput);
+            
+            const nameField = document.querySelector('[name="project[translation][name]"]');
+            const descField = document.querySelector('[name="project[translation][description]"]');
+            
+            const translationNameInput = document.createElement('input');
+            translationNameInput.type = 'hidden';
+            translationNameInput.name = 'translation[name]';
+            translationNameInput.value = nameField ? nameField.value : '';
+            e.target.appendChild(translationNameInput);
+            
+            const translationDescInput = document.createElement('input');
+            translationDescInput.type = 'hidden';
+            translationDescInput.name = 'translation[description]';
+            translationDescInput.value = descField ? descField.value : '';
+            e.target.appendChild(translationDescInput);
+
+            markAsSaved();
+            // SUPPRIMÉ: showNotification côté client - le message viendra du controller
+            
+            return true;
+        }
+
+        function validateForm() {
+            const requiredFields = document.querySelectorAll('[required]');
+            let isValid = true;
+            
+            requiredFields.forEach(field => {
+                field.classList.remove('is-invalid');
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    const feedback = field.parentNode.querySelector('.invalid-feedback');
+                    if (feedback) {
+                        feedback.textContent = 'Ce champ est requis';
+                    }
+                    isValid = false;
+                }
+            });
+
+            if (!isValid) {
+                // SUPPRIMÉ: showNotification côté client
+                const firstInvalid = document.querySelector('.is-invalid');
+                if (firstInvalid) {
+                    firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstInvalid.focus();
+                }
+            }
+
+            return isValid;
+        }
+
+        function confirmCancel() {
+            if (hasUnsavedChanges) {
+                return confirm('Vous avez des modifications non sauvegardées. Êtes-vous sûr de vouloir annuler ?');
+            }
+            return true;
+        }
+
+        console.log('%c🚀 Formulaire Modification Projet MK BA - Messages centralisés!', 'color: #6d5192; font-size: 16px; font-weight: bold;');
+        console.log('✅ NOUVEAU: Messages centralisés depuis le controller');
+        console.log('✅ SUPPRIMÉ: Toutes les notifications JavaScript locales');
+        console.log('✅ Upload corrigé avec validation côté serveur');
+        console.log('✅ Gestion robuste des traductions et fichiers');
+    </script>
+{% endblock %}

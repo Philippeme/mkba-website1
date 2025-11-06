@@ -1,0 +1,785 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ procedure.pname }}{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">
+        <i class="bi-eye me-2"></i>
+        {{ procedure.pname }}
+    </h1>
+    <div class="btn-group">
+        <a href="{{ path('admin_procedure_edit', {'id': procedure.id}) }}" class="btn btn-warning">
+            <i class="bi-pencil me-2"></i>
+            Edit
+        </a>
+        {% if procedure.providingAdministration %}
+        <a href="{{ path('admin_public_entity_show', {'id': procedure.providingAdministration.id}) }}" 
+           class="btn btn-info">
+            <i class="bi-building me-2"></i>
+            View Administration
+        </a>
+        {% endif %}
+        {% if procedure.hasWorkflows %}
+        <a href="{{ path('admin_workflow_by_procedure', {'id': procedure.id}) }}" class="btn btn-success">
+            <i class="bi-diagram-3 me-2"></i>
+            View Workflow ({{ procedure.workflowCount }} steps)
+        </a>
+        {% endif %}
+        <button type="button" 
+                class="btn btn-danger delete-btn" 
+                data-procedure-id="{{ procedure.id }}"
+                data-procedure-name="{{ procedure.pname }}">
+            <i class="bi-trash me-2"></i>
+            Delete
+        </button>
+    </div>
+</div>
+
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ path('admin_procedure_index') }}">Procedures</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ procedure.pname }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- Basic Information -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="bi-info-circle me-2"></i>
+                    Basic Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted">Procedure Name:</label>
+                            <p class="fs-5">{{ procedure.pname }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted">Family:</label>
+                            <p>
+                                {% if procedure.family %}
+                                    <a href="{{ path('admin_family_show', {'id': procedure.family.id}) }}" 
+                                       class="badge bg-primary text-decoration-none fs-6">
+                                        {{ procedure.family.fname }}
+                                    </a>
+                                {% else %}
+                                    <span class="badge bg-warning fs-6">No Family</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-muted">Short Description:</label>
+                    <div class="border rounded p-3 bg-light">
+                        {{ procedure.shortdesc|nl2br }}
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-muted">Long Description:</label>
+                    <div class="border rounded p-3 bg-light">
+                        {{ procedure.longdesc|nl2br }}
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted">Service Cost:</label>
+                            <p><span class="badge bg-success fs-6">{{ procedure.servicecost|number_format(0, '.', ',') }} XAF</span></p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted">Process Time:</label>
+                            <p><span class="badge bg-info fs-6">{{ procedure.processtime }}</span></p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted">Display Order:</label>
+                            <p><span class="badge bg-secondary fs-6">{{ procedure.displayOrder }}</span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted">Status:</label>
+                            <p>
+                                <span class="badge bg-{{ procedure.isActive ? 'success' : 'danger' }} fs-6">
+                                    <i class="bi-{{ procedure.isActive ? 'check-circle' : 'x-circle' }} me-1"></i>
+                                    {{ procedure.isActive ? 'Active' : 'Inactive' }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted">Publication Status:</label>
+                            <p>
+                                <span class="badge bg-{{ procedure.isPublished ? 'primary' : 'secondary' }} fs-6">
+                                    <i class="bi-{{ procedure.isPublished ? 'globe' : 'file-text' }} me-1"></i>
+                                    {{ procedure.isPublished ? 'Published' : 'Draft' }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW: Workflow Steps Section -->
+        {% if procedure.hasWorkflows %}
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="bi-diagram-3 me-2"></i>
+                    Workflow Steps ({{ procedure.workflowCount }})
+                </h5>
+                <div class="btn-group btn-group-sm">
+                    <a href="{{ path('admin_workflow_new', {'procedure': procedure.id}) }}" class="btn btn-light">
+                        <i class="bi-plus-circle me-1"></i>Add Step
+                    </a>
+                    <a href="{{ path('admin_workflow_by_procedure', {'id': procedure.id}) }}" class="btn btn-outline-light">
+                        <i class="bi-eye me-1"></i>View All
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% set activeWorkflows = procedure.activeWorkflows %}
+                {% if activeWorkflows|length > 0 %}
+                    <!-- Workflow Timeline -->
+                    <div class="workflow-timeline mb-4">
+                        <div class="d-flex align-items-center overflow-auto pb-3" style="min-width: {{ activeWorkflows|length * 200 }}px;">
+                            {% for workflow in activeWorkflows %}
+                            <div class="flex-fill text-center position-relative" style="min-width: 180px;">
+                                <!-- Timeline Step -->
+                                <div class="timeline-step">
+                                    <div class="step-number bg-{{ workflow.isRequired ? 'warning' : 'info' }} text-{{ workflow.isRequired ? 'dark' : 'white' }} rounded-circle d-inline-flex align-items-center justify-content-center"
+                                         style="width: 35px; height: 35px; font-weight: bold; font-size: 0.9rem;">
+                                        {{ workflow.stepOrder }}
+                                    </div>
+                                    {% if not loop.last %}
+                                    <div class="step-connector position-absolute" style="top: 17px; left: 50%; width: 100%; height: 2px; background: #28a745; z-index: -1;"></div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Step Info -->
+                                <div class="mt-2">
+                                    <h6 class="mb-1 small">{{ workflow.name|slice(0, 20) }}{% if workflow.name|length > 20 %}...{% endif %}</h6>
+                                    <small class="text-muted d-block mb-1">{{ workflow.shortDescription|slice(0, 40) }}{% if workflow.shortDescription|length > 40 %}...{% endif %}</small>
+                                    
+                                    <div class="mb-1">
+                                        {% if workflow.isRequired %}
+                                            <span class="badge bg-warning badge-sm">Required</span>
+                                        {% else %}
+                                            <span class="badge bg-info badge-sm">Optional</span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ path('admin_workflow_show', {'id': workflow.id}) }}" 
+                                           class="btn btn-outline-success btn-sm" title="View Step">
+                                            <i class="bi-eye"></i>
+                                        </a>
+                                        <a href="{{ path('admin_workflow_edit', {'id': workflow.id}) }}" 
+                                           class="btn btn-outline-warning btn-sm" title="Edit Step">
+                                            <i class="bi-pencil"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Summary -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="border rounded p-3 bg-light">
+                                <strong class="text-success small">Required Steps:</strong>
+                                <div class="mt-1">
+                                    <span class="badge bg-warning">{{ procedure.requiredWorkflows|length }}</span>
+                                    <span class="small text-muted">out of {{ procedure.workflowCount }} total</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="border rounded p-3 bg-light">
+                                <strong class="text-info small">Optional Steps:</strong>
+                                <div class="mt-1">
+                                    <span class="badge bg-info">{{ procedure.optionalWorkflows|length }}</span>
+                                    <span class="small text-muted">can be skipped if not applicable</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="text-center py-3">
+                        <i class="bi-diagram-3 text-muted" style="font-size: 2rem;"></i>
+                        <p class="text-muted mb-2">No active workflow steps found</p>
+                        <a href="{{ path('admin_workflow_new', {'procedure': procedure.id}) }}" class="btn btn-success btn-sm">
+                            <i class="bi-plus-circle me-1"></i>Create First Step
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <!-- No Workflow Steps -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="card-title mb-0">
+                    <i class="bi-exclamation-triangle me-2"></i>
+                    Workflow Steps
+                </h5>
+            </div>
+            <div class="card-body text-center">
+                <i class="bi-diagram-3 text-muted" style="font-size: 3rem;"></i>
+                <h6 class="text-muted mt-3">No workflow steps defined</h6>
+                <p class="text-muted mb-3">Define the step-by-step process for this procedure to help citizens understand what's required.</p>
+                <a href="{{ path('admin_workflow_new', {'procedure': procedure.id}) }}" class="btn btn-success">
+                    <i class="bi-plus-circle me-2"></i>
+                    Create First Workflow Step
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Providing Administration -->
+        {% if procedure.providingAdministration %}
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0">
+                    <i class="bi-building me-2"></i>
+                    Providing Administration
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        {% if procedure.providingAdministration.logo %}
+                            <img src="{{ asset('uploads/public_entities/' ~ procedure.providingAdministration.logo) }}" 
+                                 alt="{{ procedure.providingAdministration.institutionName }}" 
+                                 class="img-fluid rounded border mb-3"
+                                 style="max-height: 100px;">
+                        {% else %}
+                            <div class="text-center border rounded p-3 mb-3 bg-light">
+                                <i class="bi-building" style="font-size: 2rem; color: #6c757d;"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-9">
+                        <h6 class="text-info">{{ procedure.providingAdministration.institutionName }}</h6>
+                        {% if procedure.providingAdministration.department %}
+                            <p class="mb-2">
+                                <span class="badge bg-primary">{{ procedure.providingAdministration.department.name }}</span>
+                            </p>
+                        {% endif %}
+                        
+                        <div class="mb-2">
+                            <strong class="text-muted small">Address:</strong>
+                            <p class="mb-1">{{ procedure.providingAdministration.headquartersAddress }}</p>
+                        </div>
+                        
+                        <div class="row">
+                            {% if procedure.providingAdministration.phoneNumber %}
+                            <div class="col-md-6">
+                                <strong class="text-muted small">Phone:</strong>
+                                <p class="mb-1">
+                                    <a href="tel:{{ procedure.providingAdministration.phoneNumber }}" class="text-decoration-none">
+                                        <i class="bi-telephone me-1"></i>{{ procedure.providingAdministration.phoneNumber }}
+                                    </a>
+                                </p>
+                            </div>
+                            {% endif %}
+                            {% if procedure.providingAdministration.email %}
+                            <div class="col-md-6">
+                                <strong class="text-muted small">Email:</strong>
+                                <p class="mb-1">
+                                    <a href="mailto:{{ procedure.providingAdministration.email }}" class="text-decoration-none">
+                                        <i class="bi-envelope me-1"></i>{{ procedure.providingAdministration.email }}
+                                    </a>
+                                </p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if procedure.providingAdministration.website %}
+                        <div class="mt-2">
+                            <a href="{{ procedure.providingAdministration.website }}" target="_blank" 
+                               class="btn btn-outline-primary btn-sm">
+                                <i class="bi-globe me-1"></i>Visit Website
+                            </a>
+                        </div>
+                        {% endif %}
+                        
+                        {% if procedure.providingAdministration.contactPersonName %}
+                        <div class="mt-3 pt-3 border-top">
+                            <strong class="text-muted small">Contact Person:</strong>
+                            <p class="mb-1">{{ procedure.providingAdministration.contactPersonName }}</p>
+                            {% if procedure.providingAdministration.contactPersonEmail %}
+                                <small>
+                                    <a href="mailto:{{ procedure.providingAdministration.contactPersonEmail }}">
+                                        {{ procedure.providingAdministration.contactPersonEmail }}
+                                    </a>
+                                </small>
+                            {% endif %}
+                            {% if procedure.providingAdministration.contactPersonPhone %}
+                                <small class="d-block">
+                                    <a href="tel:{{ procedure.providingAdministration.contactPersonPhone }}">
+                                        {{ procedure.providingAdministration.contactPersonPhone }}
+                                    </a>
+                                </small>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mt-3 pt-3 border-top">
+                    <a href="{{ path('admin_public_entity_show', {'id': procedure.providingAdministration.id}) }}" 
+                       class="btn btn-primary btn-sm">
+                        <i class="bi-eye me-1"></i>View Full Administration Details
+                    </a>
+                    {% if procedure.providingAdministration.activeProcedures|length > 1 %}
+                        <span class="ms-3 text-muted small">
+                            This administration provides {{ procedure.providingAdministration.activeProcedures|length }} procedures
+                        </span>
+                        <a href="{{ path('admin_procedure_by_administration', {'id': procedure.providingAdministration.id}) }}" 
+                           class="btn btn-outline-info btn-sm ms-2">
+                            <i class="bi-list me-1"></i>View All Procedures
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Legal Document -->
+        {% if procedure.legaltext %}
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="bi-file-pdf me-2"></i>
+                    Legal Documentation
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <i class="bi-file-pdf text-danger" style="font-size: 2rem;"></i>
+                    <div class="ms-3">
+                        <h6 class="mb-1">Legal Text Document</h6>
+                        <p class="text-muted mb-2">PDF document containing legal requirements and procedures</p>
+                        <a href="{{ asset('uploads/documents/' ~ procedure.legaltext) }}" 
+                           target="_blank" 
+                           class="btn btn-outline-primary btn-sm">
+                            <i class="bi-download me-1"></i>
+                            Download Document
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Associated Documents -->
+        {% if procedure.documents|length > 0 %}
+        <div class="card shadow-sm">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="card-title mb-0">
+                    <i class="bi-files me-2"></i>
+                    Associated Documents ({{ procedure.documents|length }})
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Input Documents -->
+                    <div class="col-md-6">
+                        <h6 class="text-warning mb-3">
+                            <i class="bi-arrow-down-circle me-1"></i>
+                            Input Documents ({{ procedure.inputDocuments|length }})
+                        </h6>
+                        {% if procedure.inputDocuments|length > 0 %}
+                            {% for document in procedure.inputDocuments %}
+                            <div class="card mb-2">
+                                <div class="card-body p-2">
+                                    <div class="d-flex align-items-center">
+                                        {% if document.filePath %}
+                                            {% if document.mimeType == 'application/pdf' %}
+                                                <i class="bi-file-pdf text-danger me-2"></i>
+                                            {% else %}
+                                                <i class="bi-file-earmark text-info me-2"></i>
+                                            {% endif %}
+                                        {% else %}
+                                            <i class="bi-file text-muted me-2"></i>
+                                        {% endif %}
+                                        <div class="flex-grow-1">
+                                            <strong class="small">{{ document.name }}</strong>
+                                            <div class="text-muted small">
+                                                {% if document.isRequired %}
+                                                    <span class="badge badge-sm bg-danger">Required</span>
+                                                {% else %}
+                                                    <span class="badge badge-sm bg-secondary">Optional</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% if document.filePath %}
+                                            <a href="{{ asset('uploads/documents/' ~ document.filePath) }}" 
+                                               target="_blank" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="bi-eye"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted small">No input documents required</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Output Documents -->
+                    <div class="col-md-6">
+                        <h6 class="text-success mb-3">
+                            <i class="bi-arrow-up-circle me-1"></i>
+                            Output Documents ({{ procedure.outputDocuments|length }})
+                        </h6>
+                        {% if procedure.outputDocuments|length > 0 %}
+                            {% for document in procedure.outputDocuments %}
+                            <div class="card mb-2">
+                                <div class="card-body p-2">
+                                    <div class="d-flex align-items-center">
+                                        {% if document.filePath %}
+                                            {% if document.mimeType == 'application/pdf' %}
+                                                <i class="bi-file-pdf text-danger me-2"></i>
+                                            {% else %}
+                                                <i class="bi-file-earmark text-info me-2"></i>
+                                            {% endif %}
+                                        {% else %}
+                                            <i class="bi-file text-muted me-2"></i>
+                                        {% endif %}
+                                        <div class="flex-grow-1">
+                                            <strong class="small">{{ document.name }}</strong>
+                                            {% if document.description %}
+                                                <div class="text-muted small">{{ document.description|slice(0, 50) }}...</div>
+                                            {% endif %}
+                                        </div>
+                                        {% if document.filePath %}
+                                            <a href="{{ asset('uploads/documents/' ~ document.filePath) }}" 
+                                               target="_blank" 
+                                               class="btn btn-sm btn-outline-success">
+                                                <i class="bi-eye"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted small">No output documents generated</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Image -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h6 class="card-title mb-0">
+                    <i class="bi-image me-2"></i>
+                    Procedure Image
+                </h6>
+            </div>
+            <div class="card-body text-center">
+                {% if procedure.image %}
+                    <img src="{{ asset('uploads/procedures/' ~ procedure.image) }}" 
+                         alt="{{ procedure.pname }}" 
+                         class="img-fluid rounded border"
+                         style="max-width: 100%; max-height: 200px;">
+                    {% if procedure.image starts with 'passport-template' or procedure.image starts with 'id-card-template' or procedure.image starts with 'birth-certificate-template' or procedure.image starts with 'marriage-certificate-template' or procedure.image starts with 'death-certificate-template' or procedure.image starts with 'driving-license-template' or procedure.image starts with 'diploma-template' or procedure.image starts with 'business-license-template' or procedure.image starts with 'land-title-template' or procedure.image starts with 'visa-template' or procedure.image starts with 'medical-authorization-template' or procedure.image starts with 'general-document-template' %}
+                        <p class="mt-3 mb-0"><span class="badge bg-primary">Bootstrap Template</span></p>
+                    {% else %}
+                        <p class="mt-3 mb-0"><span class="badge bg-info">Custom Image</span></p>
+                    {% endif %}
+                {% else %}
+                    <div class="text-muted">
+                        <i class="bi-image" style="font-size: 4rem;"></i>
+                        <p class="mt-3 mb-0">No image uploaded</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- NEW: Workflow Summary -->
+        {% if procedure.hasWorkflows %}
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-success text-white">
+                <h6 class="card-title mb-0">
+                    <i class="bi-diagram-3 me-2"></i>
+                    Workflow Summary
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-muted small">Total Steps:</label>
+                    <p class="mb-0">
+                        <span class="badge bg-secondary fs-6">{{ procedure.workflowCount }}</span>
+                    </p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-muted small">Required Steps:</label>
+                    <p class="mb-0">
+                        <span class="badge bg-warning fs-6">{{ procedure.requiredWorkflows|length }}</span>
+                    </p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-muted small">Optional Steps:</label>
+                    <p class="mb-0">
+                        <span class="badge bg-info fs-6">{{ procedure.optionalWorkflows|length }}</span>
+                    </p>
+                </div>
+                <div class="d-grid">
+                    <a href="{{ path('admin_workflow_by_procedure', {'id': procedure.id}) }}" class="btn btn-success btn-sm">
+                        <i class="bi-eye me-1"></i>View All Steps
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Metadata -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h6 class="card-title mb-0">
+                    <i class="bi-clock me-2"></i>
+                    Metadata
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-muted small">ID:</label>
+                    <p class="mb-0">#{{ procedure.id }}</p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-muted small">Created:</label>
+                    <p class="mb-0">{{ procedure.createdAt|date('F d, Y \\a\\t H:i') }}</p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-muted small">Last Updated:</label>
+                    <p class="mb-0">{{ procedure.updatedAt|date('F d, Y \\a\\t H:i') }}</p>
+                </div>
+                {% if procedure.family %}
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-muted small">Family Details:</label>
+                    <div class="border rounded p-2 bg-light">
+                        <strong>{{ procedure.family.fname }}</strong>
+                        <div class="text-muted small mt-1">
+                            {{ procedure.family.description|slice(0, 80) }}{% if procedure.family.description|length > 80 %}...{% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% if procedure.providingAdministration %}
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-muted small">Administration Status:</label>
+                    <div class="border rounded p-2 bg-light">
+                        <strong>{{ procedure.providingAdministration.institutionName }}</strong>
+                        <div class="text-muted small mt-1">
+                            Status: <span class="badge bg-{{ procedure.providingAdministration.status == 'active' ? 'success' : 'secondary' }} badge-sm">{{ procedure.providingAdministration.status|title }}</span>
+                        </div>
+                        {% if procedure.providingAdministration.code %}
+                        <div class="text-muted small">
+                            Code: <span class="badge bg-info badge-sm">{{ procedure.providingAdministration.code }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h6 class="card-title mb-0">
+                    <i class="bi-lightning me-2"></i>
+                    Quick Actions
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-outline-{{ procedure.isActive ? 'danger' : 'success' }} toggle-status-btn"
+                            data-procedure-id="{{ procedure.id }}">
+                        <i class="bi-{{ procedure.isActive ? 'pause' : 'play' }} me-2"></i>
+                        {{ procedure.isActive ? 'Deactivate' : 'Activate' }}
+                    </button>
+                    <button type="button" class="btn btn-outline-{{ procedure.isPublished ? 'warning' : 'primary' }} toggle-published-btn"
+                            data-procedure-id="{{ procedure.id }}">
+                        <i class="bi-{{ procedure.isPublished ? 'eye-slash' : 'globe' }} me-2"></i>
+                        {{ procedure.isPublished ? 'Unpublish' : 'Publish' }}
+                    </button>
+                    <!-- NEW: Workflow Actions -->
+                    {% if procedure.hasWorkflows %}
+                    <a href="{{ path('admin_workflow_new', {'procedure': procedure.id}) }}" class="btn btn-outline-success">
+                        <i class="bi-plus-circle me-2"></i>
+                        Add Workflow Step
+                    </a>
+                    {% else %}
+                    <a href="{{ path('admin_workflow_new', {'procedure': procedure.id}) }}" class="btn btn-outline-warning">
+                        <i class="bi-diagram-3 me-2"></i>
+                        Create Workflow
+                    </a>
+                    {% endif %}
+                    {% if procedure.providingAdministration and procedure.providingAdministration.email %}
+                    <a href="mailto:{{ procedure.providingAdministration.email }}" class="btn btn-outline-info">
+                        <i class="bi-envelope me-2"></i>
+                        Contact Administration
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="bi-exclamation-triangle me-2"></i>
+                    Confirm Deletion
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the procedure <strong>{{ procedure.pname }}</strong>?</p>
+                <p class="text-muted small">This action will deactivate the procedure and cannot be undone.</p>
+                {% if procedure.hasWorkflows %}
+                <div class="alert alert-warning">
+                    <i class="bi-exclamation-triangle me-2"></i>
+                    <strong>Warning:</strong> This procedure has {{ procedure.workflowCount }} workflow steps that will also be deactivated.
+                </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="{{ path('admin_procedure_delete', {'id': procedure.id}) }}" style="display: inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ procedure.id) }}">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi-trash me-1"></i>
+                        Delete Procedure
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Delete button functionality
+    document.querySelectorAll('.delete-btn').forEach(function(button) {
+        button.addEventListener('click', function() {
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        });
+    });
+
+    // Toggle status functionality
+    document.querySelectorAll('.toggle-status-btn').forEach(function(button) {
+        button.addEventListener('click', function() {
+            const procedureId = this.dataset.procedureId;
+            
+            fetch(`/admin/procedure/${procedureId}/toggle-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error updating status: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Error updating status');
+            });
+        });
+    });
+
+    // Toggle published functionality
+    document.querySelectorAll('.toggle-published-btn').forEach(function(button) {
+        button.addEventListener('click', function() {
+            const procedureId = this.dataset.procedureId;
+            
+            fetch(`/admin/procedure/${procedureId}/toggle-published`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error updating publication status: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Error updating publication status');
+            });
+        });
+    });
+});
+</script>
+
+<style>
+.workflow-timeline {
+    background: linear-gradient(135deg, #e8f5e8 0%, #f0f8f0 100%);
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.timeline-step {
+    position: relative;
+}
+
+.step-number {
+    position: relative;
+    z-index: 2;
+}
+
+.step-connector {
+    transform: translateX(17px);
+}
+
+.badge-sm {
+    font-size: 0.7em;
+}
+</style>
+{% endblock %}

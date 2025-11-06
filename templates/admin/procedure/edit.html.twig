@@ -1,0 +1,31 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Edit Procedure{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">
+        <i class="bi-pencil me-2"></i>
+        Edit Procedure: {{ procedure.pname }}
+    </h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{{ path('admin_procedure_index') }}">Procedures</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('admin_procedure_show', {'id': procedure.id}) }}">{{ procedure.pname }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Edit</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="card-title mb-0">
+            <i class="bi-gear me-2"></i>
+            Update Procedure Information
+        </h5>
+    </div>
+    <div class="card-body">
+        {{ include('admin/procedure/_form.html.twig', {'button_label': 'Update Procedure'}) }}
+    </div>
+</div>
+{% endblock %}

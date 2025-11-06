@@ -1,0 +1,93 @@
+<div class="admin-header">
+    <div class="header-top-section">
+        <button class="mobile-menu-toggle me-3 d-md-none" id="mobileMenuToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Search Container -->
+        <div class="search-container">
+            <label for="headerSearch"></label><input type="text" class="search-input" placeholder="Rechercher procédures, institutions, demandes..." id="headerSearch">
+            <button class="search-btn" type="button">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+
+        <!-- Fullscreen Button -->
+        <button class="fullscreen-btn" id="fullscreenBtn" title="Mode plein écran">
+            <i class="fas fa-expand"></i>
+        </button>
+
+        <div class="header-actions ms-auto">
+            <!-- Language Selector -->
+            <div class="language-selector dropdown">
+                <button class="dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown">
+                    <i class="fas fa-globe"></i>
+                    <span>FR</span>
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#" data-lang="fr"><i class="fas fa-flag me-2"></i>Français</a></li>
+                    <li><a class="dropdown-item" href="#" data-lang="en"><i class="fas fa-flag-usa me-2"></i>English</a></li>
+                </ul>
+            </div>
+
+            <!-- Notifications -->
+            <div class="notifications-container">
+                <button class="notification-btn" id="notificationBtn">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge">3</span>
+                </button>
+            </div>
+
+            <!-- User Profile -->
+            <div class="user-profile dropdown">
+                <button class="profile-toggle" id="profileToggle" data-bs-toggle="dropdown">
+                    <div class="user-avatar">
+                        {{ app.user ? (app.user.firstName|first ~ app.user.lastName|first) : 'AD' }}
+                    </div>
+                    <div class="user-info-header d-none d-md-block">
+                        <div class="user-name">{{ app.user ? (app.user.firstName ~ ' ' ~ app.user.lastName) : 'Administrateur' }}</div>
+                        <div class="user-role">Administrateur</div>
+                    </div>
+                    <i class="fas fa-chevron-down" style="font-size: 10px; color: var(--mk-gray);"></i>
+                </button>
+                <ul class="dropdown-menu user-dropdown dropdown-menu-end">
+                    <li>
+                        <a class="dropdown-item" href="#">
+                            <i class="bi-person-circle me-2"></i>
+                            Mon Profil
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#">
+                            <i class="bi-gear me-2"></i>
+                            Paramètres
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="#">
+                            <i class="bi-question-circle me-2"></i>
+                            Aide
+                        </a>
+                    </li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="{{ path('app_logout') }}">
+                            <i class="bi-box-arrow-right text-danger me-2"></i>
+                            Déconnexion
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Breadcrumb Navigation -->
+    <div class="breadcrumb-nav">
+        <div class="breadcrumb-path">
+            <a href="{{ path('admin_dashboard') }}" class="breadcrumb-item">Dashboard</a>
+                {# Valeur par défaut si non redéfini dans la page enfant #}
+                <span class="breadcrumb-separator">/</span>
+                {{ breadcrumb_content|raw }}
+        </div>
+    </div>
+</div>

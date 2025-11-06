@@ -1,0 +1,29 @@
+{# templates/admin/components/datatable/action_group.html.twig #}
+
+{# Définition des variables obligatoires #}
+{% set entity_id = entity_id is defined ? entity_id : 0 %}
+{% set view_path = view_path is defined ? view_path : '#' %}
+{% set edit_path = edit_path is defined ? edit_path : '#' %}
+{% set delete_name = delete_name is defined ? delete_name : 'N/A' %}
+
+<div class="mkba-actions-group">
+
+    {# Bouton Voir/Détail #}
+    <a href="{{ view_path }}" class="btn btn-outline-info" title="Voir le détail">
+        <i class="fas fa-eye"></i>
+    </a>
+
+    {# Bouton Modifier #}
+    <a href="{{ edit_path }}" class="btn btn-outline-warning" title="Modifier">
+        <i class="fas fa-edit"></i>
+    </a>
+
+    {# Bouton Supprimer (déclenche la modale JS) #}
+    {# L'appel 'showDeleteModal' est défini dans votre JS spécifique #}
+    <button type="button"
+            class="btn btn-outline-danger"
+            title="Supprimer"
+            onclick="showDeleteModal({{ entity_id }},'{{ delete_name }}')">
+        <i class="fas fa-trash"></i>
+    </button>
+</div>

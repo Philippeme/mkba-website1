@@ -1,0 +1,326 @@
+{# templates/base.html.twig #}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% block meta_description %}OAG - Oversee Advising Group, cabinet de conseil spécialisé dans l'évaluation et le suivi de projets de développement international{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}OAG, conseil, évaluation, développement, international, projets, suivi{% endblock %}">
+    <meta name="author" content="Oversee Advising Group">
+    <title>{% block title %}OAG - Oversee Advising Group{% endblock %}</title>
+
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="{{ asset('images/logo/favicon.ico') }}" type="image/x-icon">
+    <link rel="apple-touch-icon" href="{{ asset('images/logo/apple-touch-icon.png') }}">
+
+    {% block stylesheets %}
+            {{ encore_entry_link_tags('app') }}
+        <!-- Google Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+
+        <!-- Bootstrap CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+        <!-- AOS - Animate On Scroll -->
+        <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/responsive.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/animations.css') }}">
+    {% endblock %}
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="top-header">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col-md-2">
+                        <a href="{{ path('app_home') }}" class="logo" aria-label="OAG - Page d'accueil">
+                            <img src="{{ asset('images/logo/oag-logo.png') }}" alt="OAG - Oversee Advising Group">
+                        </a>
+                    </div>
+                    <div class="col-md-8">
+                        <nav class="main-nav" role="navigation" aria-label="Navigation principale">
+                            <ul>
+                                <li class="has-dropdown">
+                                    <a href="#" aria-haspopup="true" aria-expanded="false">À PROPOS DE NOUS</a>
+                                    <div class="dropdown-menu" role="menu">
+                                        <ul>
+                                            <li><a href="#" role="menuitem">Notre mission</a></li>
+                                            <li><a href="#" role="menuitem">Notre équipe</a></li>
+                                            <li><a href="#" role="menuitem">Notre approche</a></li>
+                                            <li><a href="#" role="menuitem">Notre histoire</a></li>
+                                        </ul>
+                                    </div>
+                                </li>
+                                <li class="has-dropdown">
+                                    <a href="#" aria-haspopup="true" aria-expanded="false">SERVICES</a>
+                                    <div class="dropdown-menu" role="menu">
+                                        <ul>
+                                            <li><a href="#" role="menuitem">Suivi évaluation</a></li>
+                                            <li><a href="#" role="menuitem">Evaluation des projets</a></li>
+                                            <li><a href="#" role="menuitem">Suivi indépendant (TPM)</a></li>
+                                            <li><a href="#" role="menuitem">Micro-évaluation SNU</a></li>
+                                            <li><a href="#" role="menuitem">Etude et recherche</a></li>
+                                        </ul>   
+                                    </div>
+                                </li>
+                                <li>
+                                    <a href="{{ path('app_projects') }}">RÉALISATIONS</a>
+                                </li>
+                                <li class="has-dropdown">
+                                    <a href="#" aria-haspopup="true" aria-expanded="false">TRAVAILLER AVEC NOUS</a>
+                                    <div class="dropdown-menu" role="menu">
+                                        <ul>
+                                            <li><a href="#" role="menuitem">Opportunités d'emploi</a></li>
+                                            <li><a href="#" role="menuitem">Devenir consultant</a></li>
+                                            <li><a href="#" role="menuitem">Stages</a></li>
+                                        </ul>
+                                    </div>
+                                </li>
+                                <li>
+                                    <a href="#">ACTUALITÉS</a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </div>
+                    <div class="col-md-2 text-right">
+                        <div class="header-right-section">
+                            <div class="header-top-elements">
+                                <div class="social-icons">
+                                    <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                                </div>
+                                <div class="lang-selector">
+                                    <a href="#" class="active">FR</a>
+                                    <span>|</span>
+                                    <a href="#">EN</a>
+                                </div>
+                            </div>
+                            <div class="header-bottom-elements">
+                                <div class="contact-btn">
+                                    <a href="#" class="btn btn-primary">CONTACTS</a>
+                                </div>
+                                <button class="mobile-menu-toggle" aria-label="Menu">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Menu mobile -->
+    <div class="mobile-menu">
+        <div class="close-menu">
+            <i class="fas fa-times"></i>
+        </div>
+        <nav>
+            <ul>
+                <li class="has-submenu">
+                    <a href="#">À PROPOS DE NOUS</a>
+                    <ul class="submenu">
+                        <li><a href="#">Notre mission</a></li>
+                        <li><a href="#">Notre équipe</a></li>
+                        <li><a href="#">Notre approche</a></li>
+                        <li><a href="#">Notre histoire</a></li>
+                    </ul>
+                </li>
+                <li class="has-submenu">
+                    <a href="#">SERVICES</a>
+                    <ul class="submenu">
+                        <li><a href="#">Suivi évaluation</a></li>
+                        <li><a href="#">Evaluation des projets</a></li>
+                        <li><a href="#">Suivi indépendant (TPM)</a></li>
+                        <li><a href="#">Micro-évaluation SNU</a></li>
+                        <li><a href="#">Etude et recherche</a></li>
+                    </ul>
+                </li>
+                <li><a href="{{ path('app_projects') }}">RÉALISATIONS</a></li>
+                <li class="has-submenu">
+                    <a href="#">TRAVAILLER AVEC NOUS</a>
+                    <ul class="submenu">
+                        <li><a href="#">Opportunités d'emploi</a></li>
+                        <li><a href="#">Devenir consultant</a></li>
+                        <li><a href="#">Stages</a></li>
+                    </ul>
+                </li>
+                <li><a href="#">ACTUALITÉS</a></li>
+                <li><a href="#">CONTACTS</a></li>
+            </ul>
+        </nav>
+        <div class="mobile-lang">
+            <a href="#" class="active">FR</a>
+            <span>|</span>
+            <a href="#">EN</a>
+        </div>
+        <div class="mobile-social">
+            <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+            <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+            <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+        </div>
+    </div>
+
+    <!-- Contenu principal -->
+    {% block body %}{% endblock %}
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-top">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6 text-left">
+                        <ul class="footer-nav">
+                            <li><a href="#">Contacts</a></li>
+                            <li class="separator">|</li>
+                            <li><a href="#">Travailler avec nous</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <div class="lang-selector">
+                            <a href="#" class="active">FR</a>
+                            <span>|</span>
+                            <a href="#">EN</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-main">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="footer-logo">
+                            <img src="{{ asset('images/logo/oag-logo-gray.png') }}" alt="OAG - Oversee Advising Group">
+                        </div>
+                        <div class="footer-social">
+                            <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                            <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                            <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <div class="footer-menu">
+                            <h3>Menu</h3>
+                            <ul>
+                                <li><a href="{{ path('app_home') }}">Accueil</a></li>
+                                <li><a href="#">À propos de nous</a></li>
+                                <li><a href="#">Services</a></li>
+                                <li><a href="{{ path('app_projects') }}">Réalisations</a></li>
+                                <li><a href="#">Travailler avec nous</a></li>
+                                <li><a href="#">Actualités</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="footer-menu footer-column-separator">
+                            <h3>Services</h3>
+                            <ul>
+                                <li><a href="#">Suivi évaluation</a></li>
+                                <li><a href="#">Evaluation des projets et programmes</a></li>
+                                <li><a href="#">Suivi indépendant des projets et programmes (TPM)</a></li>
+                                <li><a href="#">Micro-évaluation des partenaires du SNU dans le cadre du HACT</a></li>
+                                <li><a href="#">Macro évaluation</a></li>
+                                <li><a href="#">Etude et recherche</a></li>
+                                <li><a href="#">Renforcement des capacités</a></li>
+                                <li><a href="#">Unité d'exécution des projets</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="footer-menu footer-column-separator">
+                            <h3>Secteurs</h3>
+                            <div class="row">
+                                <div class="col-md-6 col-6">
+                                    <ul>
+                                        <li><a href="#">Education</a></li>
+                                        <li><a href="#">Santé</a></li>
+                                        <li><a href="#">Protection de l'enfance</a></li>
+                                        <li><a href="#">Paix et conflits</a></li>
+                                        <li><a href="#">Environnement et changement climatique</a></li>
+                                        <li><a href="#">Finance climatique</a></li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6 col-6">
+                                    <ul>
+                                        <li><a href="#">Agriculture et sécurité alimentaire</a></li>
+                                        <li><a href="#">Démocratie et gouvernance</a></li>
+                                        <li><a href="#">Eau et assainissement</a></li>
+                                        <li><a href="#">Etat civil</a></li>
+                                        <li><a href="#">Droit de l'homme</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6 text-left">
+                        <ul class="footer-links">
+                            <li><a href="#">Mentions légales</a></li>
+                            <li class="separator">|</li>
+                            <li><a href="#">Politique de Confidentialité</a></li>
+                            <li class="separator">|</li>
+                            <li><a href="#">Termes et conditions</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        <div class="footer-copyright">
+                            <p>Copyright © {{ "now"|date("Y") }}. Tous droits réservés.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-credits">
+                    <p>Powered by MK BA</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    {% block javascripts %}
+            {{ encore_entry_script_tags('app') }}
+        <!-- jQuery -->
+        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+        <!-- Bootstrap JS Bundle with Popper -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+        <!-- AOS - Animate On Scroll -->
+        <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+        <!-- Custom JS -->
+        <script src="{{ asset('js/main.js') }}"></script>
+        
+        <script>
+            // Initialisation AOS
+            AOS.init({
+                duration: 800,
+                easing: 'ease-in-out',
+                once: true,
+                offset: 50
+            });
+        </script>
+    {% endblock %}
+</body>
+</html>

@@ -1,0 +1,13 @@
+{# templates/admin/components/datatable/bulk_actions_dropdown.html.twig #}
+
+<div class="mkba-bulk-actions-dropdown" id="bulkActionsDropdown" style="display: none;">
+    <button class="mkba-btn mkba-btn-warning">
+        <i class="fas fa-list-check me-1"></i>Actions <i class="fas fa-chevron-down ms-1"></i>
+    </button>
+    <div class="mkba-dropdown-content">
+        {# Note : bulkAction doit être une fonction JS disponible globalement (voir DatatableManager) #}
+        <a href="#" onclick="bulkAction('excel')"><i class="fas fa-file-excel me-2 text-success"></i>Exporter Excel</a>
+        <a href="#" onclick="bulkAction('pdf')"><i class="fas fa-file-pdf me-2 text-danger"></i>Exporter PDF</a>
+        <a href="#" onclick="bulkAction('delete')" class="text-danger"><i class="fas fa-trash me-2"></i>Supprimer sélection</a>
+    </div>
+</div>

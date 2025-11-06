@@ -1,0 +1,263 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ family.fname }}{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">
+        <i class="bi-eye me-2"></i>
+        {{ family.fname }}
+    </h1>
+    <div class="btn-group">
+        <a href="{{ path('admin_family_edit', {'id': family.id}) }}" class="btn btn-warning">
+            <i class="bi-pencil me-2"></i>
+            Edit
+        </a>
+        <button type="button" 
+                class="btn btn-danger delete-btn" 
+                data-family-id="{{ family.id }}"
+                data-family-name="{{ family.fname }}">
+            <i class="bi-trash me-2"></i>
+            Delete
+        </button>
+    </div>
+</div>
+
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ path('admin_family_index') }}">Families</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ family.fname }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- Basic Information -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="bi-info-circle me-2"></i>
+                    Basic Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted">Family Name:</label>
+                            <p class="fs-5">{{ family.fname }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted">Display Order:</label>
+                            <p><span class="badge bg-secondary fs-6">{{ family.displayOrder }}</span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-muted">Description:</label>
+                    <div class="border rounded p-3 bg-light">
+                        {{ family.description|nl2br }}
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted">Status:</label>
+                            <p>
+                                <span class="badge bg-{{ family.isActive ? 'success' : 'danger' }} fs-6">
+                                    <i class="bi-{{ family.isActive ? 'check-circle' : 'x-circle' }} me-1"></i>
+                                    {{ family.isActive ? 'Active' : 'Inactive' }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-muted">Total Procedures:</label>
+                            <p><span class="badge bg-info fs-6">{{ family.procedures|length }}</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Associated Procedures -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0">
+                    <i class="bi-gear me-2"></i>
+                    Associated Procedures ({{ family.procedures|length }})
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if family.procedures|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Cost</th>
+                                    <th>Process Time</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for procedure in family.procedures %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ procedure.pname }}</strong>
+                                        <div class="text-muted small">{{ procedure.shortdesc|slice(0, 50) }}...</div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">{{ procedure.servicecost|number_format(0, '.', ',') }} XAF</span>
+                                    </td>
+                                    <td>{{ procedure.processtime }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ procedure.isActive ? 'success' : 'danger' }}">
+                                            {{ procedure.isActive ? 'Active' : 'Inactive' }}
+                                        </span>
+                                        {% if procedure.isPublished %}
+                                            <span class="badge bg-primary">Published</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Draft</span>
+                                        {% endif %}
+                                        {% if procedure.documents|length > 0 %}
+                                            <div class="mt-1">
+                                                <span class="badge bg-warning badge-sm">{{ procedure.inputDocuments|length }} In</span>
+                                                <span class="badge bg-info badge-sm">{{ procedure.outputDocuments|length }} Out</span>
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ path('admin_procedure_show', {'id': procedure.id}) }}" 
+                                           class="btn btn-sm btn-outline-info">
+                                            <i class="bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi-gear text-muted" style="font-size: 3rem;"></i>
+                        <h5 class="text-muted mt-3">No procedures associated</h5>
+                        <p class="text-muted">This family doesn't have any procedures yet.</p>
+                        <a href="{{ path('admin_procedure_new') }}" class="btn btn-primary">
+                            <i class="bi-plus-circle me-2"></i>
+                            Add Procedure
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Icon and Metadata -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h6 class="card-title mb-0">
+                    <i class="bi-image me-2"></i>
+                    Family Icon
+                </h6>
+            </div>
+            <div class="card-body text-center">
+                {% if family.icon %}
+                    {% if family.icon starts with 'bi-' %}
+                        <i class="{{ family.icon }}" style="font-size: 4rem; color: #007bff;"></i>
+                        <p class="mt-3 mb-0"><span class="badge bg-primary">Bootstrap Icon</span></p>
+                    {% else %}
+                        <img src="{{ asset('uploads/families/' ~ family.icon) }}" 
+                             alt="{{ family.fname }}" 
+                             class="img-fluid rounded border"
+                             style="max-width: 150px; max-height: 150px;">
+                        <p class="mt-3 mb-0"><span class="badge bg-info">Custom Icon</span></p>
+                    {% endif %}
+                {% else %}
+                    <div class="text-muted">
+                        <i class="bi-image" style="font-size: 4rem;"></i>
+                        <p class="mt-3 mb-0">No icon uploaded</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Metadata -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h6 class="card-title mb-0">
+                    <i class="bi-clock me-2"></i>
+                    Metadata
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-muted small">ID:</label>
+                    <p class="mb-0">#{{ family.id }}</p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-muted small">Created:</label>
+                    <p class="mb-0">{{ family.createdAt|date('F d, Y \\a\\t H:i') }}</p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold text-muted small">Last Updated:</label>
+                    <p class="mb-0">{{ family.updatedAt|date('F d, Y \\a\\t H:i') }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="bi-exclamation-triangle me-2"></i>
+                    Confirm Deletion
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the family <strong>{{ family.fname }}</strong>?</p>
+                {% if family.procedures|length > 0 %}
+                    <div class="alert alert-warning">
+                        <i class="bi-exclamation-triangle me-2"></i>
+                        This family has {{ family.procedures|length }} associated procedure(s). Deleting this family may affect those procedures.
+                    </div>
+                {% endif %}
+                <p class="text-muted small">This action will deactivate the family and cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="{{ path('admin_family_delete', {'id': family.id}) }}" style="display: inline;">
+                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ family.id) }}">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi-trash me-1"></i>
+                        Delete Family
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Delete button functionality
+    document.querySelectorAll('.delete-btn').forEach(function(button) {
+        button.addEventListener('click', function() {
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        });
+    });
+});
+</script>
+{% endblock %}

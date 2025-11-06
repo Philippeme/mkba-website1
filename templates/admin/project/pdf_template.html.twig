@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - MK BA</title>
+    <style>
+        @page {
+            margin: 2cm 1.5cm;
+            @top-center {
+                content: "{{ title }}";
+                font-family: 'Arial', sans-serif;
+                font-size: 10px;
+                color: #666;
+            }
+            @bottom-center {
+                content: "Page " counter(page) " sur " counter(pages);
+                font-family: 'Arial', sans-serif;
+                font-size: 9px;
+                color: #666;
+            }
+            @bottom-right {
+                content: "Généré le {{ exportDate|date('d/m/Y à H:i') }}";
+                font-family: 'Arial', sans-serif;
+                font-size: 9px;
+                color: #666;
+            }
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 11px;
+            line-height: 1.4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #f18221 0%, #0071BC 100%);
+            color: white;
+            padding: 25px 20px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.1);
+            /* Motif simple avec des points CSS au lieu de SVG */
+            background-image: 
+                radial-gradient(circle at 1px 1px, rgba(255,255,255,0.15) 1px, transparent 0);
+            background-size: 20px 20px;
+            opacity: 0.5;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .header h1 {
+            margin: 0 0 10px 0;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .header .subtitle {
+            margin: 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .header .meta-info {
+            margin-top: 15px;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .export-summary {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .export-summary h3 {
+            margin: 0 0 8px 0;
+            color: #6d5192;
+            font-size: 14px;
+        }
+
+        .export-summary .stats {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .export-summary .stat-item {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .projects-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 10px;
+        }
+
+        .projects-table thead th {
+            background: #6d5192;
+            color: white;
+            padding: 8px 6px;
+            text-align: left;
+            font-weight: bold;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid #5a4a7a;
+        }
+
+        .projects-table tbody td {
+            padding: 8px 6px;
+            border: 1px solid #e9ecef;
+            vertical-align: top;
+            word-wrap: break-word;
+        }
+
+        .projects-table tbody tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .projects-table tbody tr:hover {
+            background: #e3f2fd;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            min-width: 60px;
+            text-align: center;
+            border: 1px solid;
+        }
+
+        .status-planning {
+            background: rgba(108, 117, 125, 0.2);
+            color: #6c757d;
+            border-color: #6c757d;
+        }
+
+        .status-in_progress {
+            background: rgba(52, 152, 219, 0.2);
+            color: #3498db;
+            border-color: #3498db;
+        }
+
+        .status-on_hold {
+            background: rgba(243, 156, 18, 0.2);
+            color: #f39c12;
+            border-color: #f39c12;
+        }
+
+        .status-completed {
+            background: rgba(39, 174, 96, 0.2);
+            color: #27ae60;
+            border-color: #27ae60;
+        }
+
+        .status-cancelled {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+            border-color: #e74c3c;
+        }
+
+        .priority-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            min-width: 45px;
+            text-align: center;
+            border: 1px solid;
+        }
+
+        .priority-low { 
+            background: #e9ecef; 
+            color: #495057; 
+            border-color: #495057;
+        }
+
+        .priority-medium { 
+            background: #fff3cd; 
+            color: #856404; 
+            border-color: #856404;
+        }
+
+        .priority-high { 
+            background: #f8d7da; 
+            color: #721c24; 
+            border-color: #721c24;
+        }
+
+        .priority-critical { 
+            background: #f5c6cb; 
+            color: #721c24; 
+            border-color: #721c24;
+        }
+
+        .project-code {
+            font-weight: bold;
+            color: #6d5192;
+            font-size: 10px;
+        }
+
+        .project-name {
+            font-weight: 600;
+            color: #333;
+            max-width: 200px;
+            word-wrap: break-word;
+        }
+
+        .project-description {
+            font-size: 9px;
+            color: #666;
+            max-width: 180px;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        .responsible {
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .date-cell {
+            white-space: nowrap;
+            font-size: 9px;
+        }
+
+        .budget-cell {
+            text-align: right;
+            font-weight: 600;
+            color: #0071BC;
+        }
+
+        .category-cell {
+            font-size: 9px;
+            text-transform: capitalize;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .footer-info {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 1px solid #e9ecef;
+            font-size: 9px;
+            color: #666;
+            text-align: center;
+        }
+
+        .language-indicator {
+            background: #0071BC;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 8px;
+            font-weight: bold;
+            display: inline-block;
+            margin-left: 5px;
+        }
+
+        .page-break {
+            page-break-before: always;
+        }
+
+        /* Styles pour optimiser l'impression */
+        @media print {
+            .projects-table {
+                font-size: 9px;
+            }
+            
+            .projects-table thead th {
+                font-size: 8px;
+                padding: 6px 4px;
+            }
+            
+            .projects-table tbody td {
+                padding: 6px 4px;
+            }
+            
+            .status-badge, .priority-badge {
+                font-size: 7px;
+                padding: 2px 4px;
+            }
+        }
+
+        /* Colonnes responsives */
+        .col-code { width: 8%; }
+        .col-name { width: 20%; }
+        .col-category { width: 10%; }
+        .col-priority { width: 8%; }
+        .col-status { width: 10%; }
+        .col-responsible { width: 12%; }
+        .col-department { width: 10%; }
+        .col-dates { width: 10%; }
+        .col-budget { width: 12%; }
+
+        /* Styles simplifiés pour éviter les conflits DomPDF */
+        .simple-border {
+            border: 1px solid #dee2e6;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .mb-0 {
+            margin-bottom: 0;
+        }
+
+        .mt-1 {
+            margin-top: 5px;
+        }
+
+        .font-weight-bold {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <!-- En-tête du document -->
+    <div class="header">
+        <div class="header-content">
+            <h1>{{ title }}</h1>
+            <p class="subtitle">Export des projets MK BA</p>
+            <div class="meta-info">
+                Langue d'export : {{ currentLocale|upper }}
+                {% if isSelection %}
+                    • Sélection personnalisée
+                {% else %}
+                    • Export complet
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Résumé de l'export -->
+    <div class="export-summary">
+        <h3>Résumé du fichier</h3>
+        <div class="stats">
+            <div class="stat-item">
+                <strong>{{ totalProjects }}</strong> projet(s) exporté(s)
+            </div>
+            <div class="stat-item">
+                <strong>{{ exportDate|date('d/m/Y') }}</strong> à <strong>{{ exportDate|date('H:i') }}</strong>
+            </div>
+            <div class="stat-item">
+                Langue : <strong>{{ currentLocale == 'fr' ? 'Français' : 'English' }}</strong>
+            </div>
+        </div>
+    </div>
+
+    {% if projects|length > 0 %}
+        <!-- Tableau des projets -->
+        <table class="projects-table">
+            <thead>
+                <tr>
+                    <th class="col-code">Code</th>
+                    <th class="col-name">Nom du Projet</th>
+                    <th class="col-category">Catégorie</th>
+                    <th class="col-priority">Priorité</th>
+                    <th class="col-status">Statut</th>
+                    <th class="col-responsible">Responsable</th>
+                    <th class="col-department">Département</th>
+                    <th class="col-dates">Dates</th>
+                    <th class="col-budget">Budget</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for project in projects %}
+                <tr>
+                    <td class="col-code">
+                        <div class="project-code">{{ project.code }}</div>
+                    </td>
+                    <td class="col-name">
+                        <div class="project-name">
+                            {{ project.getName(currentLocale) ?: project.code }}
+                            <span class="language-indicator">{{ currentLocale|upper }}</span>
+                        </div>
+                        {% set description = project.getDescription(currentLocale) %}
+                        {% if description %}
+                            <div class="project-description">{{ description|slice(0, 100) }}{% if description|length > 100 %}...{% endif %}</div>
+                        {% endif %}
+                    </td>
+                    <td class="col-category">
+                        <div class="category-cell">{{ project.categoryLabel }}</div>
+                    </td>
+                    <td class="col-priority">
+                        <span class="priority-badge priority-{{ project.priority }}">
+                            {{ project.priorityLabel }}
+                        </span>
+                    </td>
+                    <td class="col-status">
+                        <span class="status-badge status-{{ project.status }}">
+                            {{ project.statusLabel }}
+                        </span>
+                    </td>
+                    <td class="col-responsible">
+                        <div class="responsible">{{ project.responsible ?: 'N/A' }}</div>
+                    </td>
+                    <td class="col-department">
+                        {{ project.department ?: 'N/A' }}
+                    </td>
+                    <td class="col-dates">
+                        {% if project.startDate %}
+                            <div class="date-cell"><strong>Début:</strong> {{ project.startDate|date('d/m/Y') }}</div>
+                        {% endif %}
+                        {% if project.endDate %}
+                            <div class="date-cell"><strong>Fin:</strong> {{ project.endDate|date('d/m/Y') }}</div>
+                        {% endif %}
+                        {% if not project.startDate and not project.endDate %}
+                            <div class="date-cell">N/A</div>
+                        {% endif %}
+                    </td>
+                    <td class="col-budget">
+                        {% if project.budget %}
+                            <div class="budget-cell">{{ project.budget|number_format(0, ',', ' ') }}€</div>
+                        {% else %}
+                            <div class="budget-cell">N/A</div>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="no-data">
+            <h3>Aucun projet à afficher</h3>
+            <p>Aucun projet ne correspond aux critères de sélection.</p>
+        </div>
+    {% endif %}
+
+    <!-- Informations de pied de page -->
+    <div class="footer-info">
+        <p>
+            <strong>Document généré automatiquement par MK BA</strong><br>
+            Export réalisé le {{ exportDate|date('d/m/Y à H:i:s') }} 
+            {% if isSelection %}
+                • Sélection de {{ totalProjects }} projet(s)
+            {% else %}
+                • Export complet de {{ totalProjects }} projet(s)
+            {% endif %}
+            <br>
+            Langue d'export : {{ currentLocale == 'fr' ? 'Français' : 'English' }} ({{ currentLocale|upper }})
+        </p>
+        
+        {% if totalProjects > 0 %}
+        <p style="margin-top: 15px; font-size: 8px; color: #999;">
+            <em>Note : Ce document présente les projets selon la langue sélectionnée. 
+            Les projets non traduits dans cette langue peuvent afficher des informations partielles.</em>
+        </p>
+        {% endif %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,169 @@
+{{ form_start(form, {'attr': {'id': 'familyForm', 'enctype': 'multipart/form-data'}}) }}
+<div class="row">
+    <div class="col-md-8">
+        <div class="mb-3">
+            {{ form_row(form.fname, {
+                'label_attr': {'class': 'form-label fw-bold'},
+                'attr': {'class': 'form-control'}
+            }) }}
+        </div>
+        
+        <div class="mb-3">
+            {{ form_row(form.description, {
+                'label_attr': {'class': 'form-label fw-bold'},
+                'attr': {'class': 'form-control', 'rows': 4}
+            }) }}
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    {{ form_row(form.displayOrder, {
+                        'label_attr': {'class': 'form-label fw-bold'},
+                        'attr': {'class': 'form-control'}
+                    }) }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <div class="form-check form-switch mt-4">
+                        {{ form_widget(form.isActive, {'attr': {'class': 'form-check-input'}}) }}
+                        {{ form_label(form.isActive, 'Active Status', {'label_attr': {'class': 'form-check-label fw-bold'}}) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card bg-light">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="bi-image me-2"></i>
+                    Family Icon
+                </h6>
+            </div>
+            <div class="card-body">
+                <!-- Icon Preview -->
+                <div class="mb-3 text-center">
+                    <div id="iconPreview" class="border rounded p-3" style="min-height: 120px;">
+                        {% if family.icon %}
+                            {% if family.icon starts with 'bi-' %}
+                                <i class="{{ family.icon }}" style="font-size: 4rem; color: #007bff;"></i>
+                                <p class="mt-2 mb-0 small text-muted">Bootstrap Icon</p>
+                            {% else %}
+                                <img src="{{ asset('uploads/families/' ~ family.icon) }}" 
+                                     alt="{{ family.fname }}" 
+                                     class="img-fluid rounded"
+                                     style="max-height: 100px;">
+                                <p class="mt-2 mb-0 small text-muted">Custom Icon</p>
+                            {% endif %}
+                        {% else %}
+                            <div class="text-muted">
+                                <i class="bi-image" style="font-size: 2rem;"></i>
+                                <p class="mt-2 mb-0">No icon selected</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Bootstrap Icon Selection -->
+                <div class="mb-3">
+                    {{ form_row(form.iconBootstrap, {
+                        'label_attr': {'class': 'form-label fw-bold'},
+                        'attr': {'class': 'form-select', 'onchange': 'updateIconPreview(this.value, this.options[this.selectedIndex].text)'}
+                    }) }}
+                </div>
+                
+                <!-- Custom File Input -->
+                <div class="mb-3">
+                    {{ form_row(form.iconFile, {
+                        'label_attr': {'class': 'form-label fw-bold'},
+                        'attr': {'class': 'form-control', 'accept': 'image/*', 'onchange': 'previewIcon(this)'}
+                    }) }}
+                </div>
+
+                <!-- Remove Icon Option -->
+                <div class="mb-3">
+                    <div class="form-check">
+                        {{ form_widget(form.removeIcon, {'attr': {'class': 'form-check-input'}}) }}
+                        {{ form_label(form.removeIcon, 'Remove current icon', {'label_attr': {'class': 'form-check-label text-danger'}}) }}
+                    </div>
+                </div>
+                
+                <div class="form-text">
+                    <small>
+                        <i class="bi-info-circle me-1"></i>
+                        Choose Bootstrap icon or upload custom. Max: 2MB
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <button type="submit" class="btn btn-primary">
+        <i class="bi-check-circle me-2"></i>
+        {{ button_label|default('Save Family') }}
+    </button>
+    <a href="{{ path('admin_family_index') }}" class="btn btn-secondary">
+        <i class="bi-arrow-left me-2"></i>
+        Cancel
+    </a>
+</div>
+
+{{ form_end(form) }}
+
+<script>
+function updateIconPreview(iconClass, iconLabel) {
+    if (iconClass) {
+        const preview = document.getElementById('iconPreview');
+        preview.innerHTML = `
+            <i class="${iconClass}" style="font-size: 4rem; color: #007bff;"></i>
+            <p class="mt-2 mb-0 small text-muted">Bootstrap Icon: ${iconLabel}</p>
+        `;
+        // Clear custom file input and remove checkbox
+        document.querySelector('input[name="family[iconFile]"]').value = '';
+        const removeCheckbox = document.querySelector('input[name="family[removeIcon]"]');
+        if (removeCheckbox) removeCheckbox.checked = false;
+    }
+}
+
+function previewIcon(input) {
+    const preview = document.getElementById('iconPreview');
+    
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            preview.innerHTML = `
+                <img src="${e.target.result}" 
+                     class="img-fluid rounded" 
+                     style="max-height: 100px;"
+                     alt="Icon preview">
+                <p class="mt-2 mb-0 small text-muted">Custom Icon Preview</p>
+            `;
+        };
+        
+        reader.readAsDataURL(input.files[0]);
+        
+        // Clear Bootstrap selection and remove checkbox
+        document.querySelector('select[name="family[iconBootstrap]"]').value = '';
+        const removeCheckbox = document.querySelector('input[name="family[removeIcon]"]');
+        if (removeCheckbox) removeCheckbox.checked = false;
+    }
+}
+
+// Form validation
+document.getElementById('familyForm').addEventListener('submit', function(e) {
+    const fname = document.querySelector('input[name="family[fname]"]').value.trim();
+    const description = document.querySelector('textarea[name="family[description]"]').value.trim();
+    
+    if (!fname || !description) {
+        e.preventDefault();
+        alert('Please fill in all required fields.');
+        return false;
+    }
+});
+</script>

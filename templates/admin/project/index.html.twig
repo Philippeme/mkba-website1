@@ -1,0 +1,201 @@
+{% extends 'admin/components/datatable/base_list_layout.html.twig' %}
+
+{# Définition des variables spécifiques #}
+{% set list_title = 'Projets' %}
+{% set new_button_path = path('admin_project_new') %}
+{% set new_button_label = 'Nouveau projet' %}
+
+{% block list_title_icon %}<i class="fas fa-folder me-2"></i>{% endblock %}
+{% block list_title %}Gestion des Projets{% endblock %}
+{% block breadcrumb_title %}Projets{% endblock %}
+{% block list_page_title %}Gestion des Projets{% endblock %}
+
+{% block list_subtitle %}
+    <p class="mkba-header-subtitle">Gérez et suivez l'ensemble des projets de l'organisation</p>
+{% endblock %}
+
+
+{% block quick_filters %}
+    <label for="statusFilter"></label><select id="statusFilter" class="mkba-filter-select">
+        <option value="">Tous les statuts</option>
+        <option value="planning">Planification</option>
+        <option value="in_progress">En cours</option>
+        <option value="completed">Terminé</option>
+        <option value="cancelled">Annulé</option>
+    </select>
+
+    <label for="priorityFilter"></label><select id="priorityFilter" class="mkba-filter-select">
+        <option value="">Toutes les priorités</option>
+        <option value="low">Basse</option>
+        <option value="medium">Moyenne</option>
+        <option value="high">Haute</option>
+        <option value="critical">Critique</option>
+    </select>
+{% endblock %}
+
+{% block table_headers %}
+    <th width="40">
+        <label for="selectAll"></label><input type="checkbox" class="form-check-input mkba-select-all" id="selectAll">
+    </th>
+    <th class="sortable" data-column="code">Code</th>
+    <th class="sortable" data-column="name">Nom</th>
+    <th class="sortable" data-column="category">Catégorie</th>
+    <th class="sortable" data-column="priority">Priorité</th>
+    <th class="sortable" data-column="status">Statut</th>
+    <th class="sortable" data-column="responsible">Responsable</th>
+    <th class="sortable" data-column="start_date">Date début</th>
+    <th class="sortable" data-column="created_at">Créé le</th>
+{% endblock %}
+
+{% block table_rows %}
+    {% for project in projects %}
+        <tr data-entity-id="{{ project.id }}">
+            <td><input type="checkbox" class="form-check-input mkba-row-select" value="{{ project.id }}"></td>
+            <td data-sort="{{ project.code }}">
+                <strong style="font-family: 'Courier New', monospace;">{{ project.code }}</strong>
+            </td>
+            <td data-sort="{{ project.getName(currentLocale) ?: project.code }}">
+                <div>
+                    <div style="font-weight: 500;">{{ project.getName(currentLocale) ?: 'N/A' }}</div>
+                    {% if project.description %}
+                        <div style="font-size: 0.8rem; color: #6c757d; margin-top: 2px;">
+                            {{ project.description|slice(0, 50) }}{% if project.description|length > 50 %}...{% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </td>
+            <td data-sort="{{ project.category }}">{{ project.categoryLabel }}</td>
+            <td data-sort="{{ project.priority }}">
+                <span class="priority-badge priority-{{ project.priority }}">{{ project.priorityLabel }}</span>
+            </td>
+            <td data-sort="{{ project.status }}">
+                <span class="mkba-badge {{ project.status }}">{{ project.statusLabel }}</span>
+            </td>
+            <td data-sort="{{ project.responsible ?: '' }}">
+                {% if project.responsible %}
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background: #28a745;"></div>
+                        {{ project.responsible }}
+                    </div>
+                {% else %}
+                    <span style="color: #6c757d;">Non assigné</span>
+                {% endif %}
+            </td>
+            <td data-sort="{{ project.startDate ? project.startDate|date('Y-m-d') : '' }}">
+                {% if project.startDate %}
+                    <div style="font-size: 0.85rem;">{{ project.startDate|date('d/m/Y') }}</div>
+                {% else %}
+                    <span style="color: #6c757d;">-</span>
+                {% endif %}
+            </td>
+            <td data-sort="{{ project.createdAt|date('Y-m-d H:i:s') }}">
+                <div style="font-size: 0.85rem;">{{ project.createdAt|date('d/m/Y') }}</div>
+                <div style="font-size: 0.75rem; color: #6c757d;">{{ project.createdAt|date('H:i') }}</div>
+            </td>
+            <td>
+                <div class="mkba-actions-group">
+                    <a href="{{ path('admin_project_show', {'id': project.id}) }}"
+                       class="mkba-action-btn mkba-action-view"
+                       title="Voir les détails">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                    <a href="{{ path('admin_project_edit', {'id': project.id}) }}"
+                       class="mkba-action-btn mkba-action-edit"
+                       title="Modifier">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <button type="button"
+                            class="mkba-action-btn mkba-action-delete"
+                            title="Supprimer"
+                            onclick="showDeleteModal({{ project.id }}, '{{ project.name|escape('js') }}', '{{ project.code }}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    {% else %}
+        <tr>
+            <td colspan="10">
+                <div class="mkba-empty-state">
+                    <i class="fas fa-folder-open"></i>
+                    <h4>Aucun projet trouvé</h4>
+                    <p>Commencez par créer votre premier projet</p>
+                    <a href="{{ path('admin_project_new') }}" class="mkba-add-button" style="margin-top: 16px; display: inline-flex;">
+                        <i class="fas fa-plus"></i>
+                        Créer un projet
+                    </a>
+                </div>
+            </td>
+        </tr>
+    {% endfor %}
+{% endblock %}
+
+{% block list_urls %}
+    {
+    deleteBase: '{{ path('admin_project_index') }}'.replace('/index', '/'),
+    exportExcel: '{{ path('admin_project_export_excel') }}',
+    exportPdf: '{{ path('admin_project_export_pdf') }}',
+    bulkDelete: '{{ path('admin_project_bulk_delete') }}'
+    }
+{% endblock %}
+
+{% block entity_name %}projet{% endblock %}
+
+{% block list_columns %}['code', 'name', 'category', 'priority', 'status', 'responsible', 'start_date', 'created_at']{% endblock %}
+
+{% block list_javascript %}
+    <script>
+    // JavaScript spécifique aux projets
+
+    function applyBasicFilters() {
+    const statusFilter = document.getElementById('statusFilter').value;
+    const priorityFilter = document.getElementById('priorityFilter').value;
+
+    filteredData = originalData.filter(item => {
+    let visible = true;
+
+    // Filtre par statut
+    if (statusFilter && item.status !== statusFilter) {
+    visible = false;
+    }
+
+    // Filtre par priorité
+    if (priorityFilter && item.priority !== priorityFilter) {
+    visible = false;
+    }
+
+    return visible;
+    });
+
+    currentPage = 1;
+    updateTable();
+    updatePagination();
+    updateStats();
+    }
+
+    // Animation au changement de valeur
+    document.querySelectorAll('.mkba-filter-select').forEach(select => {
+        select.addEventListener('change', function() {
+            // Ajouter une classe temporaire pour l'animation
+            this.classList.add('valid');
+
+            // Retirer la classe après l'animation
+            setTimeout(() => {
+                this.classList.remove('valid');
+            }, 1000);
+        });
+
+        // Feedback visuel au focus
+        select.addEventListener('focus', function() {
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 6px 12px rgba(52, 152, 219, 0.2)';
+        });
+
+        select.addEventListener('blur', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.05)';
+        });
+    });
+
+        </script>
+{% endblock %}

@@ -1,0 +1,48 @@
+<div class="btn-group" role="group">
+    <a href="{{ path('admin_document_show', {'id': document.id}) }}" 
+       class="btn-action btn-view" 
+       title="Voir le détail"
+       data-bs-toggle="tooltip">
+        <i class="bi-eye"></i>
+    </a>
+    
+    {% if document.file %}
+        <a href="{{ path('admin_document_preview', {'id': document.id}) }}" 
+           class="btn-action btn-view" 
+           title="Prévisualiser"
+           target="_blank"
+           data-bs-toggle="tooltip">
+            <i class="bi-search"></i>
+        </a>
+        
+        <a href="{{ path('admin_document_download', {'id': document.id}) }}" 
+           class="btn-action btn-download" 
+           title="Télécharger"
+           data-bs-toggle="tooltip">
+            <i class="bi-download"></i>
+        </a>
+    {% endif %}
+    
+    <a href="{{ path('admin_document_edit', {'id': document.id}) }}" 
+       class="btn-action btn-edit" 
+       title="Modifier"
+       data-bs-toggle="tooltip">
+        <i class="bi-pencil"></i>
+    </a>
+    
+    <button type="button" 
+            class="btn-action btn-secondary" 
+            title="Changer le statut"
+            onclick="toggleStatus({{ document.id }})"
+            data-bs-toggle="tooltip">
+        <i class="bi-{{ document.isActive ? 'toggle-on' : 'toggle-off' }}"></i>
+    </button>
+    
+    <button type="button" 
+            class="btn-action btn-delete" 
+            title="Supprimer"
+            onclick="deleteDocument({{ document.id }})"
+            data-bs-toggle="tooltip">
+        <i class="bi-trash"></i>
+    </button>
+</div>

@@ -1,0 +1,30 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}New Family{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">
+        <i class="bi-plus-circle me-2"></i>
+        Create New Family
+    </h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="{{ path('admin_family_index') }}">Families</a></li>
+            <li class="breadcrumb-item active" aria-current="page">New</li>
+        </ol>
+    </nav>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+        <h5 class="card-title mb-0">
+            <i class="bi-collection me-2"></i>
+            Family Information
+        </h5>
+    </div>
+    <div class="card-body">
+        {{ include('admin/family/_form.html.twig', {'button_label': 'Create Family'}) }}
+    </div>
+</div>
+{% endblock %}

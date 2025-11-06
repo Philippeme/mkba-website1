@@ -1,0 +1,1268 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}{{ project.getName(currentLocale) ?: project.code }} - Détails{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        :root {
+            --mk-primary: #6d5192;
+            --mk-secondary: #8e32e9;
+            --mk-orange: #f18221;
+            --mk-blue: #0071BC;
+            --mk-dark: #1c273c;
+            --mk-success: #10b981;
+            --mk-warning: #f59e0b;
+            --mk-danger: #ef4444;
+            --mk-info: #3b82f6;
+            --mk-light: #f8f9fa;
+            --mk-lighter: #ffffff;
+            --mk-gradient-primary: linear-gradient(135deg, #f18221 0%, #0071BC 100%);
+        }
+
+        .project-header {
+            background: var(--mk-gradient-primary);
+            color: white;
+            padding: 2rem 0;
+            margin: -2rem -2rem 2rem -2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>') repeat;
+            opacity: 0.3;
+        }
+
+        .project-header-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .project-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .project-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-bottom: 1rem;
+        }
+
+        .project-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .meta-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .actions-header {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: flex-start;
+        }
+
+        .btn-header-action {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-header-action:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-header-action.btn-edit {
+            background: var(--mk-warning);
+            border-color: var(--mk-warning);
+        }
+
+        .btn-header-action.btn-delete {
+            background: var(--mk-danger);
+            border-color: var(--mk-danger);
+        }
+
+        /* CORRECTION: Bouton de langue plus fin et repositionné en bas à droite */
+        .language-switcher-header {
+            position: absolute;
+            bottom: 15px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 6px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+            padding: 4px;
+            display: flex;
+            gap: 2px;
+            border: 1px solid rgba(109, 81, 146, 0.2);
+            z-index: 10;
+        }
+
+        .lang-btn-header {
+            background: transparent;
+            border: none;
+            padding: 5px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 11px;
+            transition: all 0.3s ease;
+            color: var(--mk-gray);
+            position: relative;
+            min-width: 33px;
+            height: 33px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lang-btn-header.active {
+            background: var(--mk-primary);
+            color: white;
+        }
+
+        .lang-btn-header:hover:not(.active) {
+            background: var(--mk-light);
+        }
+
+        .translation-status-indicator-header {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            border: 1px solid white;
+            font-size: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .translation-complete {
+            background: var(--mk-success);
+            color: white;
+        }
+
+        .translation-incomplete {
+            background: var(--mk-warning);
+            color: white;
+        }
+
+        .translation-missing {
+            background: var(--mk-danger);
+            color: white;
+        }
+
+        .translation-alert {
+            background: linear-gradient(45deg, #f8d7da, #f5c6cb);
+            border: 1px solid #dc3545;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            color: #721c24;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .translation-alert.warning {
+            background: linear-gradient(45deg, #fff3cd, #ffeaa7);
+            border-color: #ffc107;
+            color: #856404;
+        }
+
+        .translation-alert::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: #dc3545;
+        }
+
+        .translation-alert.warning::before {
+            background: #ffc107;
+        }
+
+        .translation-alert .alert-icon {
+            font-size: 1.8rem;
+            margin-right: 15px;
+        }
+
+        .translation-alert .alert-content {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .translation-alert .alert-text {
+            flex: 1;
+        }
+
+        .translation-alert .alert-title {
+            font-weight: 700;
+            margin-bottom: 8px;
+            font-size: 1.2rem;
+        }
+
+        .translation-alert .alert-description {
+            margin-bottom: 0;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+
+        .btn-add-translation {
+            background: var(--mk-secondary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .btn-add-translation:hover {
+            background: var(--mk-secondary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(109, 81, 146, 0.3);
+        }
+
+        .info-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 30px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        .info-section.empty-translation {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: 2px dashed #dee2e6;
+            text-align: center;
+            padding: 50px 30px;
+        }
+
+        .section-title {
+            color: var(--mk-primary);
+            font-weight: 700;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid rgba(109, 81, 146, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .section-title .language-indicator {
+            margin-left: auto;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .language-indicator.available {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+            border: 1px solid #10b981;
+        }
+
+        .language-indicator.missing {
+            background: rgba(239, 68, 68, 0.1);
+            color: #dc2626;
+            border: 1px solid #ef4444;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: var(--mk-dark);
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            font-size: 1rem;
+            color: #495057;
+            word-wrap: break-word;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+            width: fit-content;
+        }
+
+        .status-planning {
+            background: rgba(108, 117, 125, 0.2);
+            color: #6c757d;
+        }
+
+        .status-in_progress {
+            background: rgba(52, 152, 219, 0.2);
+            color: #3498db;
+        }
+
+        .status-on_hold {
+            background: rgba(243, 156, 18, 0.2);
+            color: #f39c12;
+        }
+
+        .status-completed {
+            background: rgba(39, 174, 96, 0.2);
+            color: #27ae60;
+        }
+
+        .status-cancelled {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+
+        .priority-badge {
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+        }
+
+        .priority-low { background: #e9ecef; color: #495057; }
+        .priority-medium { background: #fff3cd; color: #856404; }
+        .priority-high { background: #f8d7da; color: #721c24; }
+        .priority-critical { background: #f5c6cb; color: #721c24; }
+
+        .members-list, .links-list, .attachments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .member-item, .link-item, .attachment-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .member-item:hover, .link-item:hover, .attachment-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+
+        .member-header, .link-header, .attachment-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .member-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--mk-gradient-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .member-info h5 {
+            margin: 0;
+            color: var(--mk-dark);
+            font-weight: 600;
+        }
+
+        .member-role {
+            color: var(--mk-gray);
+            font-size: 0.9rem;
+            margin: 2px 0;
+        }
+
+        .member-email {
+            color: var(--mk-primary);
+            font-size: 0.9rem;
+            text-decoration: none;
+        }
+
+        .member-email:hover {
+            text-decoration: underline;
+        }
+
+        .link-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: var(--mk-info);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .link-info h5 {
+            margin: 0;
+            color: var(--mk-dark);
+            font-weight: 600;
+        }
+
+        .link-url {
+            color: var(--mk-primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+
+        .link-url:hover {
+            text-decoration: underline;
+        }
+
+        .link-type {
+            background: var(--mk-light);
+            color: var(--mk-dark);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .attachment-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: var(--mk-success);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .attachment-info h5 {
+            margin: 0;
+            color: var(--mk-dark);
+            font-weight: 600;
+        }
+
+        .attachment-meta {
+            color: var(--mk-gray);
+            font-size: 0.85rem;
+        }
+
+        .btn-download {
+            background: var(--mk-primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-download:hover {
+            background: var(--mk-secondary);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 40px;
+            color: var(--mk-gray);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.3;
+            color: var(--mk-primary);
+        }
+
+        .empty-state h4 {
+            color: var(--mk-dark);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .empty-state p {
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .empty-translation-state {
+            text-align: center;
+            padding: 80px 40px;
+            color: var(--mk-gray);
+        }
+
+        .empty-translation-state i {
+            font-size: 5rem;
+            margin-bottom: 25px;
+            opacity: 0.4;
+            color: var(--mk-warning);
+        }
+
+        .empty-translation-state h3 {
+            color: var(--mk-dark);
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .empty-translation-state p {
+            margin-bottom: 25px;
+            line-height: 1.7;
+            font-size: 1.1rem;
+        }
+
+        .timeline {
+            position: relative;
+            padding: 20px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 30px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #e9ecef;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 60px;
+            margin-bottom: 30px;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: 20px;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--mk-primary);
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .timeline-content {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .timeline-date {
+            font-size: 0.8rem;
+            color: var(--mk-gray);
+            font-weight: 500;
+        }
+
+        .translation-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .translation-summary {
+            background: var(--mk-light);
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .translation-summary h5 {
+            color: var(--mk-primary);
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .language-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .language-status:last-child {
+            border-bottom: none;
+        }
+
+        .language-name {
+            font-weight: 600;
+            color: var(--mk-dark);
+        }
+
+        .btn-switch-view {
+            background: var(--mk-info);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-switch-view:hover {
+            background: #2563eb;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 768px) {
+            .project-header {
+                padding: 1.5rem 0;
+                margin: -2rem -10px 2rem -10px;
+            }
+
+            .project-title {
+                font-size: 1.5rem;
+            }
+
+            .project-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .actions-header {
+                width: 100%;
+                justify-content: stretch;
+                margin-bottom: 15px;
+            }
+
+            .btn-header-action {
+                flex: 1;
+                justify-content: center;
+            }
+
+            .language-switcher-header {
+                position: static;
+                margin-top: 15px;
+                align-self: flex-end;
+            }
+
+            .info-section {
+                padding: 20px;
+                margin: 0 -10px 20px -10px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .translation-alert .alert-content {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .btn-add-translation {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .empty-state, .empty-translation-state {
+                padding: 40px 20px;
+            }
+
+            .empty-state i, .empty-translation-state i {
+                font-size: 3rem;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+
+    <!-- En-tête du projet -->
+    <div class="project-header">
+        <div class="container-fluid project-header-content">
+            <div class="row align-items-start">
+                <div class="col-md-8">
+                    <h1 class="project-title">
+                        <i class="fas fa-folder-open me-3"></i>
+                        {% if availableTranslations[currentLocale].exists %}
+                            {{ project.getName(currentLocale) }}
+                        {% else %}
+                            {{ project.code }}
+                            <span class="badge bg-warning text-dark ms-2">
+                                <i class="fas fa-language me-1"></i>
+                                Non traduit en {{ currentLocale|upper }}
+                            </span>
+                        {% endif %}
+                    </h1>
+                    <div class="project-subtitle">
+                        Code: {{ project.code }} • {{ project.categoryLabel }}
+                        {% if not availableTranslations[currentLocale].exists %}
+                            <br><small class="text-warning">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Affichage partiel - Traduction {{ currentLocale|upper }} requise pour le contenu complet
+                            </small>
+                        {% endif %}
+                    </div>
+                    <div class="project-meta">
+                        <div class="meta-item">
+                            <i class="fas fa-user me-2"></i>
+                            {{ project.responsible ?: 'Non assigné' }}
+                        </div>
+                        {% if project.startDate %}
+                        <div class="meta-item">
+                            <i class="fas fa-calendar-alt me-2"></i>
+                            Début: {{ project.startDate|date('d/m/Y') }}
+                        </div>
+                        {% endif %}
+                        {% if project.endDate %}
+                        <div class="meta-item">
+                            <i class="fas fa-calendar-check me-2"></i>
+                            Fin: {{ project.endDate|date('d/m/Y') }}
+                        </div>
+                        {% endif %}
+                        {% if project.budget %}
+                        <div class="meta-item">
+                            <i class="fas fa-euro-sign me-2"></i>
+                            {{ project.budget }}€
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="actions-header">
+                        <a href="{{ path('admin_project_edit', {id: project.id, locale: currentLocale}) }}" class="btn-header-action btn-edit">
+                            <i class="fas fa-edit"></i>
+                            {{ availableTranslations[currentLocale].exists ? 'Modifier' : 'Traduire' }}
+                        </a>
+                        <a href="{{ path('admin_project_index') }}" class="btn-header-action">
+                            <i class="fas fa-arrow-left"></i>
+                            Retour
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bouton de langue repositionné en bas à droite -->
+            <div class="language-switcher-header">
+                {% for locale in supportedLocales %}
+                    <button class="lang-btn-header {{ currentLocale == locale ? 'active' : '' }}" 
+                            data-lang="{{ locale }}" 
+                            type="button">
+                        {{ locale|upper }}
+                        {% if availableTranslations[locale].exists %}
+                            <span class="translation-status-indicator-header translation-complete">
+                                <i class="fas fa-check"></i>
+                            </span>
+                        {% else %}
+                            <span class="translation-status-indicator-header translation-missing">
+                                <i class="fas fa-exclamation"></i>
+                            </span>
+                        {% endif %}
+                    </button>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Informations principales -->
+    {% if availableTranslations[currentLocale].exists %}
+        <div class="info-section">
+            <h3 class="section-title">
+                <i class="fas fa-info-circle"></i>
+                Informations générales
+                <span class="language-indicator available">
+                    <i class="fas fa-check"></i> {{ currentLocale|upper }}
+                </span>
+            </h3>
+            
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Statut</div>
+                    <div class="info-value">
+                        <span class="status-badge status-{{ project.status }}">{{ project.statusLabel }}</span>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Priorité</div>
+                    <div class="info-value">
+                        <span class="priority-badge priority-{{ project.priority }}">{{ project.priorityLabel }}</span>
+                    </div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Département</div>
+                    <div class="info-value">{{ project.department ?: 'Non défini' }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Créé le</div>
+                    <div class="info-value">{{ project.createdAt|date('d/m/Y H:i') }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Modifié le</div>
+                    <div class="info-value">{{ project.updatedAt|date('d/m/Y H:i') }}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Statut d'activation</div>
+                    <div class="info-value">
+                        <span class="status-badge {{ project.isActive ? 'status-completed' : 'status-cancelled' }}">
+                            {{ project.isActive ? 'Actif' : 'Inactif' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Description -->
+        <div class="info-section">
+            <h3 class="section-title">
+                <i class="fas fa-file-text"></i>
+                Description
+                <span class="language-indicator available">
+                    <i class="fas fa-check"></i> {{ currentLocale|upper }}
+                </span>
+            </h3>
+            {% set description = project.getDescription(currentLocale) %}
+            {% if description %}
+                <div class="info-value">
+                    {{ description|nl2br }}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-file-text"></i>
+                    <h4>Aucune description</h4>
+                    <p>Aucune description n'a été renseignée pour ce projet en {{ currentLocale == 'fr' ? 'français' : 'anglais' }}.</p>
+                    <a href="{{ path('admin_project_edit', {id: project.id, locale: currentLocale}) }}" 
+                       class="btn-add-translation">
+                        <i class="fas fa-edit"></i>
+                        Ajouter une description
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    {% else %}
+        <!-- État vide pour traduction manquante - Informations générales -->
+        <div class="info-section empty-translation">
+            <div class="empty-translation-state">
+                <i class="fas fa-language"></i>
+                <h3>Informations non disponibles en {{ currentLocale == 'fr' ? 'français' : 'anglais' }}</h3>
+                <p>
+                    Les informations principales de ce projet ne sont pas encore traduites en {{ currentLocale == 'fr' ? 'français' : 'anglais' }}.
+                    <br>Pour afficher le contenu complet, créez d'abord la traduction correspondante.
+                </p>
+                <a href="{{ path('admin_project_edit', {id: project.id, locale: currentLocale}) }}" 
+                   class="btn-add-translation">
+                    <i class="fas fa-plus"></i>
+                    Créer la traduction {{ currentLocale|upper }}
+                </a>
+                
+                <div class="mt-4">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Vous pouvez voir le contenu existant en changeant de langue ci-dessus
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- État vide pour traduction manquante - Description -->
+        <div class="info-section empty-translation">
+            <div class="empty-translation-state">
+                <i class="fas fa-file-text"></i>
+                <h3>Description non disponible en {{ currentLocale == 'fr' ? 'français' : 'anglais' }}</h3>
+                <p>
+                    La description de ce projet n'est pas encore disponible en {{ currentLocale == 'fr' ? 'français' : 'anglais' }}.
+                </p>
+                <a href="{{ path('admin_project_edit', {id: project.id, locale: currentLocale}) }}" 
+                   class="btn-add-translation">
+                    <i class="fas fa-edit"></i>
+                    Ajouter la description en {{ currentLocale|upper }}
+                </a>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Membres du projet (non traduisibles - toujours affichés) -->
+    <div class="info-section">
+        <h3 class="section-title">
+            <i class="fas fa-users"></i>
+            Équipe projet
+            <span class="badge bg-secondary ms-2">{{ project.members|length }}</span>
+        </h3>
+        
+        {% if project.members|length > 0 %}
+            <div class="members-list">
+                {% for member in project.members %}
+                <div class="member-item">
+                    <div class="member-header">
+                        <div class="member-avatar">
+                            {{ member.name|slice(0, 1)|upper }}
+                        </div>
+                        <div class="member-info">
+                            <h5>{{ member.name }}</h5>
+                            {% if member.role %}
+                                <div class="member-role">{{ member.role|title }}</div>
+                            {% endif %}
+                            {% if member.email %}
+                                <a href="mailto:{{ member.email }}" class="member-email">
+                                    <i class="fas fa-envelope me-1"></i>{{ member.email }}
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-users"></i>
+                <h4>Aucun membre assigné</h4>
+                <p>Aucun membre n'est actuellement assigné à ce projet.</p>
+                <a href="{{ path('admin_project_edit', {id: project.id, locale: currentLocale}) }}" 
+                   class="btn-add-translation">
+                    <i class="fas fa-user-plus"></i>
+                    Ajouter des membres
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Liens externes (non traduisibles - toujours affichés) -->
+    <div class="info-section">
+        <h3 class="section-title">
+            <i class="fas fa-link"></i>
+            Liens externes
+            <span class="badge bg-secondary ms-2">{{ project.links|length }}</span>
+        </h3>
+        
+        {% if project.links|length > 0 %}
+            <div class="links-list">
+                {% for link in project.links %}
+                <div class="link-item">
+                    <div class="link-header">
+                        <div class="link-icon">
+                            <i class="fas fa-external-link-alt"></i>
+                        </div>
+                        <div class="link-info">
+                            <h5>{{ link.title }}</h5>
+                            <a href="{{ link.url }}" target="_blank" class="link-url">
+                                {{ link.url }}
+                            </a>
+                            {% if link.type %}
+                                <div class="mt-2">
+                                    <span class="link-type">{{ link.type|title }}</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-link"></i>
+                <h4>Aucun lien externe</h4>
+                <p>Aucun lien externe n'est défini pour ce projet.</p>
+                <a href="{{ path('admin_project_edit', {id: project.id, locale: currentLocale}) }}" 
+                   class="btn-add-translation">
+                    <i class="fas fa-plus"></i>
+                    Ajouter des liens
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Pièces jointes (non traduisibles - toujours affichées) -->
+    <div class="info-section">
+        <h3 class="section-title">
+            <i class="fas fa-paperclip"></i>
+            Pièces jointes
+            <span class="badge bg-secondary ms-2">{{ project.attachments|length }}</span>
+        </h3>
+        
+        {% if project.attachments|length > 0 %}
+            <div class="attachments-list">
+                {% for attachment in project.attachments %}
+                <div class="attachment-item">
+                    <div class="attachment-header">
+                        <div class="attachment-icon">
+                            <i class="fas fa-file"></i>
+                        </div>
+                        <div class="attachment-info">
+                            <h5>{{ attachment.originalName }}</h5>
+                            <div class="attachment-meta">
+                                {{ attachment.formattedFileSize }} • 
+                                Ajouté le {{ attachment.uploadedAt|date('d/m/Y H:i') }}
+                            </div>
+                        </div>
+                        <div class="ms-auto">
+                            <a href="{{ asset('uploads/projects/' ~ attachment.fileName) }}" 
+                               class="btn-download" 
+                               target="_blank"
+                               download="{{ attachment.originalName }}">
+                                <i class="fas fa-download"></i>
+                                Télécharger
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-paperclip"></i>
+                <h4>Aucune pièce jointe</h4>
+                <p>Aucun fichier n'est attaché à ce projet.</p>
+                <a href="{{ path('admin_project_edit', {id: project.id, locale: currentLocale}) }}" 
+                   class="btn-add-translation">
+                    <i class="fas fa-upload"></i>
+                    Ajouter des fichiers
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Résumé détaillé des traductions -->
+    <div class="info-section">
+        <h3 class="section-title">
+            <i class="fas fa-language"></i>
+            Gestion des traductions
+        </h3>
+        
+        <div class="info-grid">
+            {% for locale in supportedLocales %}
+                <div class="info-item">
+                    <div class="info-label">{{ locale == 'fr' ? 'Version française' : 'Version anglaise' }}</div>
+                    <div class="info-value">
+                        {% if availableTranslations[locale].exists %}
+                            <span class="status-badge status-completed">
+                                <i class="fas fa-check me-1"></i>
+                                Traduction complète
+                            </span>
+                            {% if availableTranslations[locale].translation %}
+                                <div class="mt-2 text-muted small">
+                                    <strong>Nom :</strong> {{ availableTranslations[locale].translation.name|slice(0, 40) }}{% if availableTranslations[locale].translation.name|length > 40 %}...{% endif %}
+                                </div>
+                            {% endif %}
+                            <div class="mt-2">
+                                {% if currentLocale != locale %}
+                                    <button class="btn btn-sm btn-outline-primary" onclick="switchLanguage('{{ locale }}')">
+                                        <i class="fas fa-eye me-1"></i>
+                                        Voir en {{ locale|upper }}
+                                    </button>
+                                {% endif %}
+                                <a href="{{ path('admin_project_edit', {id: project.id, locale: locale}) }}" 
+                                   class="btn btn-sm btn-outline-warning">
+                                    <i class="fas fa-edit me-1"></i>
+                                    Modifier
+                                </a>
+                            </div>
+                        {% else %}
+                            <span class="status-badge status-cancelled">
+                                <i class="fas fa-times me-1"></i>
+                                Non traduit
+                            </span>
+                            <div class="mt-2">
+                                <a href="{{ path('admin_project_edit', {id: project.id, locale: locale}) }}" 
+                                   class="btn btn-sm btn-primary">
+                                    <i class="fas fa-plus me-1"></i>
+                                    Créer la traduction
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Historique du projet (Timeline) -->
+    <div class="info-section">
+        <h3 class="section-title">
+            <i class="fas fa-history"></i>
+            Historique du projet
+        </h3>
+        
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="timeline-date">{{ project.createdAt|date('d/m/Y H:i') }}</div>
+                    <strong>Projet créé</strong>
+                    <p class="mb-0 mt-1">Le projet {{ project.code }} a été créé dans la catégorie {{ project.categoryLabel }}.</p>
+                </div>
+            </div>
+            
+            {% if project.createdAt.format('Y-m-d') != project.updatedAt.format('Y-m-d') %}
+            <div class="timeline-item">
+                <div class="timeline-marker"></div>
+                <div class="timeline-content">
+                    <div class="timeline-date">{{ project.updatedAt|date('d/m/Y H:i') }}</div>
+                    <strong>Dernière modification</strong>
+                    <p class="mb-0 mt-1">Le projet a été modifié (données générales ou traductions).</p>
+                </div>
+            </div>
+            {% endif %}
+
+            {% for locale in supportedLocales %}
+                {% if availableTranslations[locale].exists %}
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">{{ availableTranslations[locale].translation.project.updatedAt|date('d/m/Y H:i') }}</div>
+                        <strong>Traduction {{ locale|upper }} {{ availableTranslations[locale].translation.project.createdAt == availableTranslations[locale].translation.project.updatedAt ? 'créée' : 'mise à jour' }}</strong>
+                        <p class="mb-0 mt-1">Le contenu a été {{ availableTranslations[locale].translation.project.createdAt == availableTranslations[locale].translation.project.updatedAt ? 'traduit' : 'mis à jour' }} en {{ locale == 'fr' ? 'français' : 'anglais' }}.</p>
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Formulaire de suppression caché -->
+    <form id="deleteForm" method="post" action="{{ path('admin_project_delete', {id: project.id}) }}" style="display: none;">
+        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ project.id) }}">
+    </form>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gestion du switch de langue
+            document.querySelectorAll('.lang-btn-header').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const lang = this.dataset.lang;
+                    switchLanguage(lang);
+                });
+            });
+        });
+
+        function switchLanguage(locale) {
+            // Rediriger vers la même page avec la nouvelle locale
+            const url = new URL(window.location);
+            url.searchParams.set('locale', locale);
+            window.location.href = url.toString();
+        }
+
+        function confirmDelete() {
+            if (confirm('Êtes-vous sûr de vouloir supprimer ce projet ? Cette action ne peut pas être annulée.\n\nToutes les traductions et données associées seront également supprimées.')) {
+                document.getElementById('deleteForm').submit();
+            }
+        }
+
+        // Animation d'apparition des sections
+        function animateOnScroll() {
+            const sections = document.querySelectorAll('.info-section');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            });
+
+            sections.forEach((section, index) => {
+                section.style.opacity = '0';
+                section.style.transform = 'translateY(20px)';
+                section.style.transition = `opacity 0.5s ease ${index * 0.1}s, transform 0.5s ease ${index * 0.1}s`;
+                observer.observe(section);
+            });
+        }
+
+        // Initialiser les animations
+        animateOnScroll();
+
+        console.log('%c🚀 Page détails projet MK BA avec bouton de langue repositionné!', 'color: #6d5192; font-size: 16px; font-weight: bold;');
+        console.log('✅ Bouton de langue plus fin et repositionné en bas à droite');
+        console.log('✅ Affichage séparé par langue avec états vides');
+        console.log('✅ Switch de langue avec validation des traductions');
+        console.log('✅ Interface claire pour distinguer contenu traduit/non traduit');
+    </script>
+{% endblock %}

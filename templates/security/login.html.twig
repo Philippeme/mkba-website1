@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Administration MK BA</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"/>
+    
+    <style>
+        :root {
+            --gray-light: #f5f5f5;
+            --gray-medium: #888888;
+            --gray-dark: #333333;
+            --gray-darker: #2a2a2a;
+        }
+        
+        body {
+            background: var(--gray-light);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', 'Roboto', sans-serif;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(200, 200, 200, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(150, 150, 150, 0.2) 0%, transparent 50%);
+            z-index: -1;
+        }
+        
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.15),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            max-width: 450px;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .login-header {
+            background: linear-gradient(90deg, #f18221 0%, #1a4b8f 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.3;
+        }
+        
+        .logo-container {
+            position: relative;
+            z-index: 2;
+            margin-bottom: 20px;
+        }
+        
+        .logo-frame {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .logo-frame:hover {
+            transform: scale(1.05);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .logo-frame img {
+            max-width: 50px;
+            max-height: 50px;
+            filter: brightness(0) invert(1);
+        }
+        
+        .logo-frame .logo-text {
+            font-size: 24px;
+            font-weight: 900;
+            background: linear-gradient(45deg, #ffffff, #f8f9fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .login-header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .login-header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 15px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .login-body {
+            padding: 40px 30px;
+            background: white;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: linear-gradient(90deg, #FF821C 0%, #0071BC 100%);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .form-label i {
+            color: linear-gradient(90deg, #f18221 0%, #0071BC 100%);
+            font-size: 16px;
+        }
+        
+        .input-group {
+            position: relative;
+        }
+        
+        .form-control {
+            border: 2px solid #e8ecf0;
+            border-radius: 12px;
+            padding: 14px 18px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: rgba(248, 249, 250, 0.5);
+        }
+        
+        .form-control:focus {
+            border-color: var(--gray-medium);
+            box-shadow: 0 0 0 4px rgba(136, 136, 136, 0.1);
+            outline: none;
+            background: white;
+        }
+        
+        .form-control::placeholder {
+            color: var(--gray-medium);
+            opacity: 0.7;
+        }
+        
+        .btn-login {
+            background: var(--gray-light);
+            border: 2px solid #1a4b8f;
+            border-radius: 12px;
+            color: var(--gray-dark);
+            font-weight: 600;
+            padding: 14px 30px;
+            width: 100%;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-login::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn-login:hover::before {
+            left: 100%;
+        }
+        
+        .btn-login:hover {
+            background: #6B46C1;
+            color: white;
+            border-color: #6B46C1;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(51, 51, 51, 0.3);
+        }
+        
+        .btn-login:active {
+            transform: translateY(0);
+        }
+        
+        .alert {
+            border-radius: 12px;
+            margin-bottom: 24px;
+            border: none;
+            padding: 16px 20px;
+        }
+        
+        .alert-danger {
+            background: rgba(220, 53, 69, 0.1);
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .back-to-site {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(136, 136, 136, 0.1);
+        }
+        
+        .back-to-site a {
+            color: var(--gray-medium);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .back-to-site a:hover {
+            color: var(--gray-dark);
+            transform: translateX(-3px);
+        }
+        
+        .security-notice {
+            background: rgba(136, 136, 136, 0.05);
+            border: 1px solid rgba(136, 136, 136, 0.1);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--gray-medium);
+        }
+        
+        .version-info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: rgba(136, 136, 136, 0.7);
+            font-size: 12px;
+        }
+        
+        @media (max-width: 480px) {
+            .login-container {
+                margin: 20px;
+                border-radius: 16px;
+            }
+            
+            .login-header {
+                padding: 30px 20px;
+            }
+            
+            .login-body {
+                padding: 30px 20px;
+            }
+            
+            .logo-frame {
+                width: 70px;
+                height: 70px;
+            }
+        }
+        
+        /* Loading animation */
+        .btn-login.loading {
+            pointer-events: none;
+        }
+        
+        .btn-login.loading::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid currentColor;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        @keyframes spin {
+            0% { transform: translateY(-50%) rotate(0deg); }
+            100% { transform: translateY(-50%) rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <div class="logo-container">
+                <div class="logo-frame">
+                    <!-- Replace with actual MK BA logo -->
+                    <div class="logo-text">MK</div>
+                </div>
+            </div>
+            <h1>Administration MK BA</h1>
+            <p>Espace d'administration sécurisé</p>
+        </div>
+        
+        <div class="login-body">
+            {% if error %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    {{ error.messageKey|trans(error.messageData, 'security') }}
+                </div>
+            {% endif %}
+
+            <form method="post" id="loginForm">
+                <div class="form-group">
+                    <label for="username" class="form-label">
+                        <i class="bi-person"></i>
+                        Nom d'utilisateur
+                    </label>
+                    <input type="text" 
+                           value="{{ last_username }}" 
+                           name="_username" 
+                           id="username" 
+                           class="form-control" 
+                           autocomplete="username" 
+                           required 
+                           autofocus
+                           placeholder="Saisissez votre nom d'utilisateur">
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="form-label">
+                        <i class="bi-lock"></i>
+                        Mot de passe
+                    </label>
+                    <input type="password" 
+                           name="_password" 
+                           id="password" 
+                           class="form-control" 
+                           autocomplete="current-password" 
+                           required
+                           placeholder="Saisissez votre mot de passe">
+                </div>
+
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                <button class="btn btn-login" type="submit" id="loginBtn">
+                    <i class="bi-box-arrow-in-right me-2"></i>
+                    Se connecter
+                </button>
+            </form>
+
+            <div class="back-to-site">
+                <a href="{{ path('app_home') }}">
+                    <i class="bi-arrow-left"></i>
+                    Retour au site public
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="version-info">
+        MK BA Admin v1.0.0
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('loginForm');
+            const loginBtn = document.getElementById('loginBtn');
+            
+            loginForm.addEventListener('submit', function(e) {
+                loginBtn.classList.add('loading');
+                loginBtn.innerHTML = '<i class="bi-box-arrow-in-right me-2"></i>Connexion en cours...';
+            });
+            
+            document.getElementById('username').focus();
+            
+            const inputs = document.querySelectorAll('.form-control');
+            inputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    this.parentElement.style.transform = 'scale(1.02)';
+                });
+                
+                input.addEventListener('blur', function() {
+                    this.parentElement.style.transform = 'scale(1)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+{# templates/admin/components/datatable/pagination_controls.html.twig #}
+
+<div class="mkba-pagination">
+    <div class="row align-items-center">
+        <div class="col-md-3">
+            <select id="entriesSelect" class="form-select" style="max-width: 135px;">
+                <option value="10">10 par page</option>
+                <option value="25" selected>25 par page</option>
+                <option value="50">50 par page</option>
+                <option value="100">100 par page</option>
+            </select>
+        </div>
+        <div class="col-md-6 text-center">
+            <div class="mkba-pagination-info">
+                Affichage de <span id="showingFrom">1</span> à <span id="showingTo">{{ projects|length }}</span>
+                sur <span id="totalEntries">{{ projects|length }}</span> entrées
+                <span id="filteredInfo" style="display:none">
+                    (filtrées à partir de <span id="totalUnfiltered">0</span> entrées au total)
+                </span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <nav aria-label="Navigation des pages">
+                <div class="mkba-pagination-controls d-flex justify-content-end" id="paginationControls">
+                </div>
+            </nav>
+        </div>
+    </div>
+</div>

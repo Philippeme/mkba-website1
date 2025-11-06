@@ -1,0 +1,455 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Procedures{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">
+        <i class="bi-gear me-2"></i>
+        Procedures Management
+    </h1>
+    <div class="btn-group">
+        <a href="{{ path('admin_procedure_new') }}" class="btn btn-primary">
+            <i class="bi-plus-circle me-2"></i>
+            New Procedure
+        </a>
+        <a href="{{ path('admin_workflow_index') }}" class="btn btn-success">
+            <i class="bi-diagram-3 me-2"></i>
+            Workflow Steps
+        </a>
+    </div>
+</div>
+
+<!-- Quick Statistics -->
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <i class="bi-file-earmark-text" style="font-size: 2rem;"></i>
+                    <div class="ms-3">
+                        <h5 class="mb-0">{{ procedures|length }}</h5>
+                        <small>Total Procedures</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <i class="bi-check-circle" style="font-size: 2rem;"></i>
+                    <div class="ms-3">
+                        <h5 class="mb-0">
+                            {% set publishedCount = 0 %}
+                            {% for procedure in procedures %}
+                                {% if procedure.isPublished %}
+                                    {% set publishedCount = publishedCount + 1 %}
+                                {% endif %}
+                            {% endfor %}
+                            {{ publishedCount }}
+                        </h5>
+                        <small>Published</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <i class="bi-diagram-3 me-2" style="font-size: 2rem;"></i>
+                    <div class="ms-3">
+                        <h5 class="mb-0">
+                            {% set workflowCount = 0 %}
+                            {% for procedure in procedures %}
+                                {% if procedure.hasWorkflows %}
+                                    {% set workflowCount = workflowCount + 1 %}
+                                {% endif %}
+                            {% endfor %}
+                            {{ workflowCount }}
+                        </h5>
+                        <small>With Workflows</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <i class="bi-exclamation-triangle" style="font-size: 2rem;"></i>
+                    <div class="ms-3">
+                        <h5 class="mb-0">
+                            {% set noWorkflowCount = procedures|length - workflowCount %}
+                            {{ noWorkflowCount }}
+                        </h5>
+                        <small>No Workflows</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if procedures|length > 0 %}
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <h5 class="card-title mb-0">
+            <i class="bi-list-ul me-2"></i>
+            All Procedures ({{ procedures|length }})
+        </h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th width="4%">#</th>
+                        <th width="6%">Image</th>
+                        <th width="14%">Name</th>
+                        <th width="9%">Family</th>
+                        <th width="12%">Administration</th>
+                        <th width="15%">Description</th>
+                        <th width="6%">Cost</th>
+                        <th width="6%">Time</th>
+                        <th width="7%">Workflow</th>
+                        <th width="4%">Order</th>
+                        <th width="6%">Status</th>
+                        <th width="11%">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for procedure in procedures %}
+                    <tr>
+                        <td class="text-muted">#{{ procedure.id }}</td>
+                        <td>
+                            {% if procedure.image %}
+                                <img src="{{ asset('uploads/procedures/' ~ procedure.image) }}" 
+                                     alt="{{ procedure.pname }}" 
+                                     class="img-thumbnail" 
+                                     style="width: 50px; height: 40px; object-fit: cover;">
+                                {% if procedure.image ends with '-template.jpg' %}
+                                    <span class="badge bg-primary badge-sm">Template</span>
+                                {% endif %}
+                            {% else %}
+                                <div class="bg-light d-flex align-items-center justify-content-center rounded"
+                                     style="width: 50px; height: 40px;">
+                                    <i class="bi-image text-muted"></i>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <strong>{{ procedure.pname }}</strong>
+                            <div class="small text-muted">
+                                Created: {{ procedure.createdAt|date('M d, Y') }}
+                            </div>
+                            {% if procedure.legaltext %}
+                                <a href="{{ asset('uploads/documents/' ~ procedure.legaltext) }}" 
+                                   target="_blank" 
+                                   class="badge bg-info text-decoration-none">
+                                    <i class="bi-file-pdf me-1"></i>Legal Doc
+                                </a>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if procedure.family %}
+                                <span class="badge bg-primary">{{ procedure.family.fname }}</span>
+                            {% else %}
+                                <span class="badge bg-warning">No Family</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if procedure.providingAdministration %}
+                                <div class="d-flex align-items-center">
+                                    <div>
+                                        <strong class="small">{{ procedure.providingAdministration.institutionName|slice(0, 25) }}{% if procedure.providingAdministration.institutionName|length > 25 %}...{% endif %}</strong>
+                                        {% if procedure.providingAdministration.department %}
+                                            <div class="small text-muted">{{ procedure.providingAdministration.department.name }}</div>
+                                        {% endif %}
+                                        {% if procedure.providingAdministration.email %}
+                                            <div class="small">
+                                                <a href="mailto:{{ procedure.providingAdministration.email }}" class="text-decoration-none">
+                                                    <i class="bi-envelope me-1"></i>Contact
+                                                </a>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% else %}
+                                <span class="badge bg-secondary">No Administration</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="text-truncate" style="max-width: 180px;" title="{{ procedure.shortdesc }}">
+                                {{ procedure.shortdesc|slice(0, 60) }}{% if procedure.shortdesc|length > 60 %}...{% endif %}
+                            </div>
+                            {% if procedure.documents|length > 0 %}
+                                <div class="mt-1">
+                                    <span class="badge bg-warning badge-sm">{{ procedure.inputDocuments|length }} Input</span>
+                                    <span class="badge bg-success badge-sm">{{ procedure.outputDocuments|length }} Output</span>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-success">{{ procedure.servicecost|number_format(0, '.', ',') }} XAF</span>
+                        </td>
+                        <td>
+                            <small class="text-muted">{{ procedure.processtime }}</small>
+                        </td>
+                        <!-- NEW: Workflow Column -->
+                        <td>
+                            {% if procedure.hasWorkflows %}
+                                <div class="d-flex flex-column gap-1">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <span class="badge bg-success badge-sm">{{ procedure.workflowCount }} steps</span>
+                                    </div>
+                                    <div class="d-flex gap-1">
+                                        {% if procedure.requiredWorkflows|length > 0 %}
+                                            <span class="badge bg-warning badge-sm" title="Required steps">{{ procedure.requiredWorkflows|length }} req</span>
+                                        {% endif %}
+                                        {% if procedure.optionalWorkflows|length > 0 %}
+                                            <span class="badge bg-info badge-sm" title="Optional steps">{{ procedure.optionalWorkflows|length }} opt</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ path('admin_workflow_by_procedure', {'id': procedure.id}) }}" 
+                                           class="btn btn-outline-success btn-sm" 
+                                           title="View Workflow">
+                                            <i class="bi-diagram-3"></i>
+                                        </a>
+                                        <a href="{{ path('admin_workflow_new', {'procedure': procedure.id}) }}" 
+                                           class="btn btn-outline-primary btn-sm" 
+                                           title="Add Step">
+                                            <i class="bi-plus"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="text-center">
+                                    <div class="small text-muted mb-1">No workflow</div>
+                                    <a href="{{ path('admin_workflow_new', {'procedure': procedure.id}) }}" 
+                                       class="btn btn-outline-warning btn-sm" 
+                                       title="Create Workflow">
+                                        <i class="bi-plus-circle"></i>
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-secondary">{{ procedure.displayOrder }}</span>
+                        </td>
+                        <td>
+                            <div class="d-flex flex-column gap-1">
+                                <!-- Active Status -->
+                                <div class="form-check form-switch form-check-sm">
+                                    <input class="form-check-input status-toggle" 
+                                           type="checkbox" 
+                                           data-procedure-id="{{ procedure.id }}"
+                                           {% if procedure.isActive %}checked{% endif %}>
+                                    <label class="form-check-label small">
+                                        {{ procedure.isActive ? 'Active' : 'Inactive' }}
+                                    </label>
+                                </div>
+                                <!-- Published Status -->
+                                <div class="form-check form-switch form-check-sm">
+                                    <input class="form-check-input published-toggle" 
+                                           type="checkbox" 
+                                           data-procedure-id="{{ procedure.id }}"
+                                           {% if procedure.isPublished %}checked{% endif %}>
+                                    <label class="form-check-label small">
+                                        {{ procedure.isPublished ? 'Published' : 'Draft' }}
+                                    </label>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="{{ path('admin_procedure_show', {'id': procedure.id}) }}" 
+                                   class="btn btn-outline-info" title="View">
+                                    <i class="bi-eye"></i>
+                                </a>
+                                <a href="{{ path('admin_procedure_edit', {'id': procedure.id}) }}" 
+                                   class="btn btn-outline-warning" title="Edit">
+                                    <i class="bi-pencil"></i>
+                                </a>
+                                {% if procedure.providingAdministration %}
+                                    <a href="{{ path('admin_public_entity_show', {'id': procedure.providingAdministration.id}) }}" 
+                                       class="btn btn-outline-secondary" title="View Administration">
+                                        <i class="bi-building"></i>
+                                    </a>
+                                {% endif %}
+                                {% if procedure.hasWorkflows %}
+                                    <a href="{{ path('admin_workflow_by_procedure', {'id': procedure.id}) }}" 
+                                       class="btn btn-outline-success" title="View Workflow">
+                                        <i class="bi-diagram-3"></i>
+                                    </a>
+                                {% endif %}
+                                <button type="button" 
+                                        class="btn btn-outline-danger delete-btn" 
+                                        data-procedure-id="{{ procedure.id }}"
+                                        data-procedure-name="{{ procedure.pname }}"
+                                        data-workflow-count="{{ procedure.workflowCount }}"
+                                        title="Delete">
+                                    <i class="bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i class="bi-gear text-muted" style="font-size: 4rem;"></i>
+    <h3 class="text-muted mt-3">No procedures found</h3>
+    <p class="text-muted">Start by creating your first procedure</p>
+    <a href="{{ path('admin_procedure_new') }}" class="btn btn-primary">
+        <i class="bi-plus-circle me-2"></i>
+        Create First Procedure
+    </a>
+</div>
+{% endif %}
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="bi-exclamation-triangle me-2"></i>
+                    Confirm Deletion
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the procedure <strong id="procedureName"></strong>?</p>
+                <p class="text-muted small">This action will deactivate the procedure and cannot be undone.</p>
+                <div id="workflowWarning" class="alert alert-warning" style="display: none;">
+                    <i class="bi-exclamation-triangle me-2"></i>
+                    <strong>Warning:</strong> This procedure has <span id="workflowStepCount"></span> workflow steps that will also be deactivated.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    <input type="hidden" name="_token" id="deleteToken">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi-trash me-1"></i>
+                        Delete Procedure
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Status toggle functionality
+    document.querySelectorAll('.status-toggle').forEach(function(toggle) {
+        toggle.addEventListener('change', function() {
+            const procedureId = this.dataset.procedureId;
+            
+            fetch(`/admin/procedure/${procedureId}/toggle-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const label = this.parentElement.querySelector('.form-check-label');
+                    label.textContent = data.status ? 'Active' : 'Inactive';
+                } else {
+                    this.checked = !this.checked; 
+                    alert('Error updating status: ' + data.message);
+                }
+            })
+            .catch(error => {
+                this.checked = !this.checked; 
+                alert('Error updating status');
+            });
+        });
+    });
+
+    // Published toggle functionality
+    document.querySelectorAll('.published-toggle').forEach(function(toggle) {
+        toggle.addEventListener('change', function() {
+            const procedureId = this.dataset.procedureId;
+            
+            fetch(`/admin/procedure/${procedureId}/toggle-published`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const label = this.parentElement.querySelector('.form-check-label');
+                    label.textContent = data.published ? 'Published' : 'Draft';
+                } else {
+                    this.checked = !this.checked; 
+                    alert('Error updating publication status: ' + data.message);
+                }
+            })
+            .catch(error => {
+                this.checked = !this.checked; 
+                alert('Error updating publication status');
+            });
+        });
+    });
+
+    // Delete modal functionality
+    document.querySelectorAll('.delete-btn').forEach(function(button) {
+        button.addEventListener('click', function() {
+            const procedureId = this.dataset.procedureId;
+            const procedureName = this.dataset.procedureName;
+            const workflowCount = parseInt(this.dataset.workflowCount) || 0;
+            
+            document.getElementById('procedureName').textContent = procedureName;
+            document.getElementById('deleteForm').action = `/admin/procedure/${procedureId}/delete`;
+            document.getElementById('deleteToken').value = '{{ csrf_token("delete") }}';
+            
+            // Show workflow warning if applicable
+            const workflowWarning = document.getElementById('workflowWarning');
+            const workflowStepCount = document.getElementById('workflowStepCount');
+            
+            if (workflowCount > 0) {
+                workflowStepCount.textContent = workflowCount;
+                workflowWarning.style.display = 'block';
+            } else {
+                workflowWarning.style.display = 'none';
+            }
+            
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        });
+    });
+});
+</script>
+
+<style>
+.badge-sm {
+    font-size: 0.7em;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.btn-group-sm .btn {
+    padding: 0.25rem 0.4rem;
+    font-size: 0.75rem;
+}
+</style>
+{% endblock %}

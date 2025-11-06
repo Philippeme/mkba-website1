@@ -1,0 +1,416 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Modifier Document{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .document-form-header {
+            background: linear-gradient(135deg, #6d5192 0%, #f18221 100%);
+            color: white;
+            padding: 2rem 0;
+            margin: -2rem -2rem 2rem -2rem;
+        }
+        
+        .form-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .current-file {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .file-preview {
+            border: 2px dashed #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .file-preview.dragover {
+            border-color: #6d5192;
+            background-color: rgba(109, 81, 146, 0.05);
+        }
+        
+        .file-preview-content {
+            display: none;
+            margin-top: 15px;
+        }
+        
+        .preview-image {
+            max-width: 200px;
+            max-height: 150px;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .btn-submit {
+            background: linear-gradient(135deg, #6d5192 0%, #f18221 100%);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(109, 81, 146, 0.3);
+            color: white;
+        }
+        
+        .danger-zone {
+            border: 1px solid #dc3545;
+            border-radius: 8px;
+            padding: 20px;
+            background: rgba(220, 53, 69, 0.05);
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="document-form-header">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2">
+                    <i class="bi-pencil me-3"></i>
+                    Modifier Document
+                </h1>
+                <p class="mb-0">{{ document.nom }}</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{{ path('admin_document_show', {'id': document.id}) }}" class="btn btn-outline-light me-2">
+                    <i class="bi-eye me-2"></i>
+                    Voir
+                </a>
+                <a href="{{ path('admin_document_index') }}" class="btn btn-outline-light">
+                    <i class="bi-arrow-left me-2"></i>
+                    Retour
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'novalidate': 'novalidate'}}) }}
+    
+    <!-- Informations générales -->
+    <div class="form-section">
+        <h3 class="section-title mb-4">
+            <i class="bi-info-circle text-primary me-2"></i>
+            Informations générales
+        </h3>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    {{ form_label(form.nom) }}
+                    {{ form_widget(form.nom) }}
+                    {{ form_errors(form.nom) }}
+                    {{ form_help(form.nom) }}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    {{ form_label(form.displayOrder) }}
+                    {{ form_widget(form.displayOrder) }}
+                    {{ form_errors(form.displayOrder) }}
+                    {{ form_help(form.displayOrder) }}
+                </div>
+            </div>
+        </div>
+        
+        <div class="mb-3">
+            {{ form_label(form.description) }}
+            {{ form_widget(form.description) }}
+            {{ form_errors(form.description) }}
+            {{ form_help(form.description) }}
+        </div>
+        
+        <div class="mb-3">
+            <div class="form-check">
+                {{ form_widget(form.isActive) }}
+                {{ form_label(form.isActive) }}
+            </div>
+            {{ form_errors(form.isActive) }}
+            {{ form_help(form.isActive) }}
+        </div>
+    </div>
+    
+    <!-- Gestion du fichier -->
+    <div class="form-section">
+        <h3 class="section-title mb-4">
+            <i class="bi-file-earmark text-primary me-2"></i>
+            Fichier associé
+        </h3>
+        
+            <div class="current-file">
+                <h5 class="mb-3">Fichier actuel</h5>
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="d-flex align-items-center">
+                            <div class="file-icon me-3">
+                                {% if document.isImage %}
+                                    <i class="bi-image text-success" style="font-size: 2rem;"></i>
+                                {% elseif document.isPdf %}
+                                    <i class="bi-file-earmark-pdf text-danger" style="font-size: 2rem;"></i>
+                                {% else %}
+                                    <i class="bi-file-earmark text-primary" style="font-size: 2rem;"></i>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <div class="fw-bold">{{ document.originalFilename ?: document.file }}</div>
+                                <small class="text-muted">
+                                    {{ document.formattedFileSize }} • 
+                                    {{ document.fileExtension|upper ?: 'Inconnu' }} • 
+                                    Créé le {{ document.createdAt|date('d/m/Y à H:i') }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <a href="{{ path('admin_document_preview', {'id': document.id}) }}" 
+                           class="btn btn-sm btn-outline-primary me-2" 
+                           target="_blank">
+                            <i class="bi-eye me-1"></i>
+                            Voir
+                        </a>
+                        <a href="{{ path('admin_document_download', {'id': document.id}) }}" 
+                           class="btn btn-sm btn-outline-success">
+                            <i class="bi-download me-1"></i>
+                            Télécharger
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Option pour supprimer le fichier -->
+            <div class="danger-zone">
+                <div class="form-check">
+                    {{ form_widget(form.removeFile) }}
+                    {{ form_label(form.removeFile, null, {'label_attr': {'class': 'text-danger fw-bold'}}) }}
+                </div>
+                {{ form_errors(form.removeFile) }}
+                {{ form_help(form.removeFile) }}
+            </div>
+        
+        <!-- Upload nouveau fichier -->
+        <div class="mt-4">
+            <div class="mb-3">
+                {{ form_label(form.uploadedFile) }}
+                {{ form_widget(form.uploadedFile) }}
+                {{ form_errors(form.uploadedFile) }}
+                {{ form_help(form.uploadedFile) }}
+                
+                <div class="file-preview" id="filePreview">
+                    <div class="file-preview-placeholder">
+                        <i class="bi-cloud-upload text-muted" style="font-size: 3rem;"></i>
+                        <p class="text-muted mt-2">
+                            {% if document.file %}
+                                Glissez-déposez un fichier ici pour remplacer le fichier actuel
+                            {% else %}
+                                Glissez-déposez un fichier ici ou cliquez pour sélectionner
+                            {% endif %}
+                        </p>
+                        <small class="text-muted">Formats acceptés: PDF, Office, Images, Archives (max. 10MB)</small>
+                    </div>
+                    <div class="file-preview-content" id="filePreviewContent">
+                        <div id="previewImage"></div>
+                        <div class="file-info" id="fileInfo"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Actions -->
+    <div class="form-section">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <button type="submit" class="btn btn-submit">
+                    <i class="bi-check-circle me-2"></i>
+                    Enregistrer les modifications
+                </button>
+                <a href="{{ path('admin_document_show', {'id': document.id}) }}" class="btn btn-outline-secondary ms-2">
+                    <i class="bi-x-circle me-2"></i>
+                    Annuler
+                </a>
+            </div>
+            <div class="col-md-6 text-end">
+                <small class="text-muted">
+                    <i class="bi-clock me-1"></i>
+                    Dernière modification: {{ document.updatedAt|date('d/m/Y à H:i') }}
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    {{ form_end(form) }}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.querySelector('#document_uploadedFile');
+            const filePreview = document.getElementById('filePreview');
+            const filePreviewContent = document.getElementById('filePreviewContent');
+            const previewImage = document.getElementById('previewImage');
+            const fileInfo = document.getElementById('fileInfo');
+            const removeFileCheckbox = document.querySelector('#document_removeFile');
+            
+            if (fileInput) {
+                fileInput.addEventListener('change', handleFileSelect);
+                filePreview.addEventListener('dragover', handleDragOver);
+                filePreview.addEventListener('dragleave', handleDragLeave);
+                filePreview.addEventListener('drop', handleFileDrop);
+                filePreview.addEventListener('click', function() {
+                    fileInput.click();
+                });
+            }
+            
+            // Gestion du checkbox "Supprimer fichier"
+            if (removeFileCheckbox) {
+                removeFileCheckbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        if (!confirm('Êtes-vous sûr de vouloir supprimer le fichier actuel ? Cette action est irréversible.')) {
+                            this.checked = false;
+                        }
+                    }
+                });
+            }
+            
+            function handleFileSelect(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    displayFilePreview(file);
+                }
+            }
+            
+            function handleDragOver(event) {
+                event.preventDefault();
+                filePreview.classList.add('dragover');
+            }
+            
+            function handleDragLeave(event) {
+                event.preventDefault();
+                filePreview.classList.remove('dragover');
+            }
+            
+            function handleFileDrop(event) {
+                event.preventDefault();
+                filePreview.classList.remove('dragover');
+                
+                const files = event.dataTransfer.files;
+                if (files.length > 0) {
+                    const file = files[0];
+                    const dt = new DataTransfer();
+                    dt.items.add(file);
+                    fileInput.files = dt.files;
+                    displayFilePreview(file);
+                }
+            }
+            
+            function displayFilePreview(file) {
+                const fileSize = formatBytes(file.size);
+                const fileType = file.type || 'Type inconnu';
+                
+                fileInfo.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <i class="bi-file-earmark text-primary me-2" style="font-size: 1.5rem;"></i>
+                        <div>
+                            <div class="fw-bold">${file.name}</div>
+                            <small class="text-muted">${fileSize} • ${fileType}</small>
+                        </div>
+                    </div>
+                `;
+                
+                previewImage.innerHTML = '';
+                
+                if (file.type && file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewImage.innerHTML = `<img src="${e.target.result}" class="preview-image" alt="Prévisualisation">`;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    let iconClass = 'bi-file-earmark';
+                    if (file.type === 'application/pdf') iconClass = 'bi-file-earmark-pdf';
+                    else if (file.type.includes('word')) iconClass = 'bi-file-earmark-word';
+                    else if (file.type.includes('excel')) iconClass = 'bi-file-earmark-excel';
+                    else if (file.type.includes('powerpoint')) iconClass = 'bi-file-earmark-ppt';
+                    
+                    previewImage.innerHTML = `<i class="${iconClass} text-primary" style="font-size: 4rem;"></i>`;
+                }
+                
+                filePreviewContent.style.display = 'block';
+            }
+            
+            function formatBytes(bytes) {
+                if (bytes === 0) return '0 B';
+                const k = 1024;
+                const sizes = ['B', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+            
+            // Validation
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function(event) {
+                    const nomInput = document.querySelector('#document_nom');
+                    const descInput = document.querySelector('#document_description');
+                    let isValid = true;
+                    
+                    if (nomInput && !nomInput.value.trim()) {
+                        showFieldError(nomInput, 'Le nom du document est requis');
+                        isValid = false;
+                    } else {
+                        clearFieldError(nomInput);
+                    }
+                    
+                    if (descInput && !descInput.value.trim()) {
+                        showFieldError(descInput, 'La description est requise');
+                        isValid = false;
+                    } else {
+                        clearFieldError(descInput);
+                    }
+                    
+                    if (!isValid) {
+                        event.preventDefault();
+                        MKBAAdmin.showNotification('Veuillez corriger les erreurs dans le formulaire', 'error');
+                    }
+                });
+            }
+            
+            function showFieldError(field, message) {
+                clearFieldError(field);
+                field.classList.add('is-invalid');
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'invalid-feedback';
+                errorDiv.textContent = message;
+                field.parentNode.appendChild(errorDiv);
+            }
+            
+            function clearFieldError(field) {
+                field.classList.remove('is-invalid');
+                const errorDiv = field.parentNode.querySelector('.invalid-feedback');
+                if (errorDiv) errorDiv.remove();
+            }
+        });
+    </script>
+{% endblock %}

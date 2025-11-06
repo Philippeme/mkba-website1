@@ -1,0 +1,2775 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Nouveau Document - Formulaire CRUD Complet{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <!-- Quill.js CSS -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --mk-primary: #6d5192;
+            --mk-secondary: #8e32e9;
+            --mk-accent: #a855f7;
+            --mk-orange: #f18221;
+            --mk-dark: #1c273c;
+            --mk-success: #10b981;
+            --mk-warning: #f59e0b;
+            --mk-danger: #ef4444;
+            --mk-info: #3b82f6;
+            --mk-light: #f8f9fa;
+            --mk-lighter: #ffffff;
+            --mk-gradient-primary: linear-gradient(135deg, #f18221 0%, #0071BC 100%);
+        }
+
+        .document-form-header {
+            background: var(--mk-gradient-primary);
+            color: white;
+            padding: 2rem 0;
+            margin: -2rem -2rem 2rem -2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .document-form-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="50" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>') repeat;
+            opacity: 0.3;
+        }
+        
+        .form-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .form-section:hover {
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            transform: translateY(-2px);
+        }
+        
+        .section-title {
+            color: var(--mk-primary);
+            font-weight: 600;
+            border-bottom: 2px solid rgba(109, 81, 146, 0.1);
+            padding-bottom: 10px;
+            margin-bottom: 25px;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: var(--mk-dark);
+            margin-bottom: 8px;
+        }
+        
+        .form-control, .form-select {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px 16px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--mk-primary);
+            box-shadow: 0 0 0 0.2rem rgba(109, 81, 146, 0.15);
+            outline: none;
+        }
+        
+        .form-control:hover, .form-select:hover {
+            border-color: var(--mk-secondary);
+        }
+        
+        .form-check-input {
+            border: 2px solid #e5e7eb;
+            margin-top: 0.25em;
+        }
+        
+        .form-check-input:checked {
+            background-color: var(--mk-primary);
+            border-color: var(--mk-primary);
+        }
+        
+        .form-check-input:focus {
+            box-shadow: 0 0 0 0.2rem rgba(109, 81, 146, 0.15);
+        }
+        
+        .btn-add-item {
+            background: var(--mk-success);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-add-item:hover {
+            background: #059669;
+            transform: translateY(-1px);
+            color: white;
+        }
+        
+        .btn-remove-item {
+            background: var(--mk-danger);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-remove-item:hover {
+            background: #dc2626;
+            color: white;
+        }
+        
+        /* ========== AMÉLIORATION DES FICHIERS ========== */
+        .file-preview {
+            border: 2px dashed #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: #fafbfc;
+            position: relative;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .file-preview:hover {
+            border-color: var(--mk-primary);
+            background-color: rgba(109, 81, 146, 0.02);
+        }
+        
+        .file-preview.dragover {
+            border-color: var(--mk-primary);
+            background-color: rgba(109, 81, 146, 0.05);
+            transform: scale(1.02);
+        }
+        
+        .file-preview.has-file {
+            border-style: solid;
+            border-color: var(--mk-primary);
+            background: rgba(109, 81, 146, 0.05);
+        }
+        
+        .file-preview-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .file-preview.has-file .file-preview-placeholder {
+            display: none;
+        }
+        
+        .file-preview-content {
+            display: none;
+            width: 100%;
+            position: relative;
+        }
+        
+        .file-preview.has-file .file-preview-content {
+            display: block;
+        }
+        
+        .file-info {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .preview-image {
+            max-width: 200px;
+            max-height: 150px;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .color-preview {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 2px solid #e5e7eb;
+            display: inline-block;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+        
+        .range-output {
+            display: inline-block;
+            margin-left: 10px;
+            font-weight: 600;
+            color: var(--mk-primary);
+            min-width: 50px;
+        }
+        
+        .collection-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        .collection-item .btn-remove-item {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        
+        .tags-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 8px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            min-height: 45px;
+            cursor: text;
+        }
+        
+        .tag-item {
+            background: var(--mk-primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .tag-remove {
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .tag-input {
+            border: none;
+            outline: none;
+            flex: 1;
+            min-width: 100px;
+        }
+        
+        .btn-submit {
+            background: var(--mk-gradient-primary);
+            border: none;
+            color: white;
+            padding: 15px 40px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(109, 81, 146, 0.3);
+            color: white;
+        }
+        
+        .form-group-inline {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .form-group-inline .form-control {
+            flex: 1;
+        }
+        
+        .help-text {
+            font-size: 13px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        .required-indicator {
+            color: var(--mk-danger);
+            font-weight: bold;
+        }
+        
+        .input-group-text {
+            background: #f8f9fa;
+            border: 2px solid #e5e7eb;
+            border-right: none;
+        }
+        
+        .input-group .form-control {
+            border-left: none;
+        }
+        
+        .input-group:focus-within .input-group-text {
+            border-color: var(--mk-primary);
+        }
+        
+        .radio-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .radio-card {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .radio-card:hover {
+            border-color: var(--mk-primary);
+            background: rgba(109, 81, 146, 0.02);
+        }
+        
+        .radio-card input[type="radio"]:checked + .radio-card-content {
+            color: var(--mk-primary);
+        }
+        
+        .radio-card input[type="radio"]:checked ~ .radio-card {
+            border-color: var(--mk-primary);
+            background: rgba(109, 81, 146, 0.05);
+        }
+        
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+        
+        .checkbox-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .error-message {
+            color: var(--mk-danger);
+            font-size: 13px;
+            margin-top: 5px;
+        }
+        
+        .success-message {
+            color: var(--mk-success);
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+        /* ===== BOUTONS DE SUPPRESSION PERMANENTS ===== */
+        .file-remove-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--mk-danger);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+        }
+
+        .file-remove-btn:hover {
+            background: #dc2626;
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+
+        .file-remove-btn:active {
+            transform: scale(0.95);
+        }
+
+        .file-remove-btn.hidden {
+            display: none;
+        }
+
+        /* ===== CUSTOM SELECT WITH SEARCH ===== */
+        .select2-container--default .select2-selection--single {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            height: 48px;
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+
+        .select2-container--default.select2-container--focus .select2-selection--single {
+            border-color: var(--mk-primary);
+            box-shadow: 0 0 0 0.2rem rgba(109, 81, 146, 0.15);
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            padding-left: 0;
+            padding-right: 20px;
+            line-height: 32px;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 46px;
+            right: 10px;
+        }
+
+        .select2-dropdown {
+            border: 2px solid var(--mk-primary);
+            border-radius: 8px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: var(--mk-primary);
+        }
+
+        .select2-container--default .select2-search--dropdown .select2-search__field {
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 8px 12px;
+        }
+
+        .select2-container--default .select2-search--dropdown .select2-search__field:focus {
+            border-color: var(--mk-primary);
+            outline: none;
+        }
+
+        /* ===== SELECT WITH IMAGES ===== */
+        .select2-container--default .select2-results__option {
+            padding: 8px 12px;
+        }
+
+        .select2-option-with-image {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .select2-option-image {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            object-fit: cover;
+            border: 1px solid #e5e7eb;
+        }
+
+        .select2-option-content {
+            flex: 1;
+        }
+
+        .select2-option-title {
+            font-weight: 500;
+            color: var(--mk-dark);
+        }
+
+        .select2-option-subtitle {
+            font-size: 12px;
+            color: var(--mk-gray);
+        }
+
+        /* ===== FILE MANAGEMENT ===== */
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+
+        .file-item:hover {
+            background: #e9ecef;
+            border-color: var(--mk-primary);
+        }
+
+        .file-item-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .file-item-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .file-item-details {
+            flex: 1;
+        }
+
+        .file-item-name {
+            font-weight: 500;
+            color: var(--mk-dark);
+            font-size: 14px;
+        }
+
+        .file-item-meta {
+            font-size: 12px;
+            color: var(--mk-gray);
+        }
+
+        .file-item-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-file-remove {
+            background: var(--mk-danger);
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-file-remove:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .files-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 10px;
+            background: white;
+        }
+
+        .files-list:empty::before {
+            content: "Aucun fichier sélectionné";
+            color: var(--mk-gray);
+            font-style: italic;
+            display: block;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .single-file-container {
+            position: relative;
+        }
+
+        /* ===== WYSIWYG EDITOR ===== */
+        .wysiwyg-container {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .wysiwyg-container.focused {
+            border-color: var(--mk-primary);
+            box-shadow: 0 0 0 0.2rem rgba(109, 81, 146, 0.15);
+        }
+
+        .ql-toolbar {
+            background: #f8f9fa;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .ql-container {
+            min-height: 200px;
+            font-size: 14px;
+            background: white;
+        }
+
+        .ql-editor {
+            min-height: 180px;
+            padding: 16px;
+        }
+
+        .ql-toolbar .ql-stroke {
+            stroke: var(--mk-dark);
+        }
+
+        .ql-toolbar .ql-fill {
+            fill: var(--mk-dark);
+        }
+
+        .ql-toolbar button:hover .ql-stroke {
+            stroke: var(--mk-primary);
+        }
+
+        .ql-toolbar button:hover .ql-fill {
+            fill: var(--mk-primary);
+        }
+
+        .ql-toolbar button.ql-active .ql-stroke {
+            stroke: var(--mk-primary);
+        }
+
+        .ql-toolbar button.ql-active .ql-fill {
+            fill: var(--mk-primary);
+        }
+
+        /* ===== MODAL STYLES ===== */
+        .mkba-modal .modal-content {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .mkba-modal .modal-header {
+            background: linear-gradient(135deg, #0071BC 0%, #FF821C 100%);
+            color: white;
+            border-radius: 16px 16px 0 0;
+            padding: 20px 30px;
+            border-bottom: none;
+        }
+
+        .mkba-modal .modal-title {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .mkba-modal .modal-body {
+            padding: 30px;
+        }
+
+        .mkba-modal .modal-footer {
+            border-top: 1px solid #e9ecef;
+            padding: 20px 30px;
+            gap: 12px;
+        }
+
+        .mkba-modal .btn-close:hover {
+            border-radius: 6px;
+        }
+
+        .modal-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 24px;
+        }
+
+        .modal-icon.danger {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--mk-danger);
+        }
+
+        .modal-icon.warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--mk-warning);
+        }
+
+        .modal-icon.info {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--mk-info);
+        }
+
+        .modal-icon.success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--mk-success);
+        }
+
+        @media (max-width: 768px) {
+            .form-section {
+                padding: 20px;
+                margin: 0 -10px 20px -10px;
+            }
+            
+            .document-form-header {
+                margin: -2rem -10px 2rem -10px;
+                padding: 1.5rem 0;
+            }
+            
+            .radio-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .checkbox-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .mkba-modal .modal-body {
+                padding: 20px;
+            }
+
+            .mkba-modal .modal-header,
+            .mkba-modal .modal-footer {
+                padding: 20px;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="document-form-header">
+    <div class="container-fluid position-relative">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="mb-2">
+                    <i class="bi-plus-circle me-3"></i>
+                    Formulaire CRUD Complet MK BA
+                </h1>
+                <p class="mb-0">Démonstration de tous les types de champs pour le backoffice</p>
+            </div>
+            <div class="col-md-4 text-end">
+                <a href="{{ path('admin_document_index') }}" class="btn btn-outline-light">
+                    <i class="bi-arrow-left me-2"></i>
+                    Retour à la liste
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL GÉNÉRIQUE RÉUTILISABLE -->
+<div class="modal fade mkba-modal" id="genericModal" tabindex="-1" aria-labelledby="genericModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="genericModalLabel">
+                    <i class="bi-exclamation-triangle" id="modalIcon"></i>
+                    <span id="modalTitle">Confirmation</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <div class="text-center">
+                    <div class="modal-icon danger" id="modalIconContainer">
+                        <i class="bi-exclamation-triangle" id="modalBodyIcon"></i>
+                    </div>
+                    <h5 id="modalBodyTitle">Êtes-vous sûr ?</h5>
+                    <p id="modalBodyText" class="text-muted">Cette action ne peut pas être annulée.</p>
+                </div>
+            </div>
+            <div class="modal-footer" id="modalFooter">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" id="modalCancelBtn">
+                    <i class="bi-x-circle me-2"></i>
+                    Annuler
+                </button>
+                <button type="button" class="btn btn-danger" id="modalConfirmBtn">
+                    <i class="bi-trash me-2"></i>
+                    Supprimer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <form method="post" enctype="multipart/form-data" novalidate id="mkbaCompleteForm">
+        
+        <!-- SECTION 1: Champs texte de base -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <i class="bi-fonts text-primary me-2"></i>
+                Champs Texte & Contenu
+            </h3>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Titre <span class="required-indicator">*</span>
+                        </label>
+                        <input type="text" class="form-control" name="titre" required 
+                               placeholder="Saisissez le titre du document">
+                        <div class="help-text">Titre principal du document (max. 255 caractères)</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Sous-titre</label>
+                        <input type="text" class="form-control" name="sous_titre" 
+                               placeholder="Sous-titre optionnel">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Email de contact</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi-envelope"></i>
+                            </span>
+                            <input type="email" class="form-control" name="email" 
+                                   placeholder="contact@mkba.com">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Téléphone</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi-telephone"></i>
+                            </span>
+                            <input type="tel" class="form-control" name="telephone" 
+                                   placeholder="+33 1 23 45 67 89">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Site web</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi-globe"></i>
+                            </span>
+                            <input type="url" class="form-control" name="site_web" 
+                                   placeholder="https://www.mkba.com">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Recherche globale</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi-search"></i>
+                            </span>
+                            <input type="search" class="form-control" name="recherche" 
+                                   placeholder="Rechercher dans tous les champs...">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">
+                    Description complète <span class="required-indicator">*</span>
+                </label>
+                <textarea class="form-control" name="description" rows="4" required
+                          placeholder="Décrivez le contenu et l'objectif du document..."></textarea>
+                <div class="help-text">Description détaillée visible par les utilisateurs</div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Notes internes</label>
+                <textarea class="form-control" name="notes_internes" rows="3"
+                          placeholder="Notes visibles uniquement par les administrateurs..."></textarea>
+                <div class="help-text">Notes privées pour l'équipe d'administration</div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Mots-clés (Tags)</label>
+                <div class="tags-input" id="tagsInput">
+                    <input type="text" class="tag-input" placeholder="Tapez un mot-clé et appuyez sur Entrée...">
+                </div>
+                <input type="hidden" name="tags" id="tagsHidden">
+                <div class="help-text">Mots-clés pour faciliter la recherche et la catégorisation</div>
+            </div>
+        </div>
+
+        <!-- SECTION WYSIWYG EDITOR -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <i class="bi-file-richtext text-primary me-2"></i>
+                Éditeur de Contenu Riche (WYSIWYG)
+            </h3>
+            
+            <div class="mb-3">
+                <label class="form-label">
+                    Contenu Principal <span class="required-indicator">*</span>
+                </label>
+                <div class="wysiwyg-container" id="wysiwygContainer">
+                    <div id="editor">
+                        <p>Commencez à taper votre contenu ici...</p>
+                        <p><br></p>
+                        <p>Vous pouvez utiliser toutes les fonctionnalités de mise en forme :</p>
+                        <ul>
+                            <li><strong>Texte en gras</strong></li>
+                            <li><em>Texte en italique</em></li>
+                            <li><u>Texte souligné</u></li>
+                            <li><a href="#">Liens hypertexte</a></li>
+                        </ul>
+                        <p>Et bien plus encore !</p>
+                    </div>
+                </div>
+                <input type="hidden" name="contenu_wysiwyg" id="contenuWysiwyg">
+                <div class="help-text">Utilisez l'éditeur pour créer du contenu riche avec mise en forme, images, liens, etc.</div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Template/Mise en page</label>
+                        <select class="form-select" name="template_layout">
+                            <option value="">Sélectionner un template</option>
+                            <option value="standard">Standard</option>
+                            <option value="article">Article de blog</option>
+                            <option value="page">Page statique</option>
+                            <option value="landing">Landing page</option>
+                            <option value="documentation">Documentation</option>
+                        </select>
+                        <div class="help-text">Template de mise en page pour l'affichage</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="allow_comments" id="allowComments">
+                            <label class="form-check-label" for="allowComments">
+                                Autoriser les commentaires sur ce contenu
+                            </label>
+                        </div>
+                        <div class="help-text">Les utilisateurs pourront commenter ce contenu</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION SELECT AVEC RECHERCHE -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <i class="bi-search text-primary me-2"></i>
+                Sélections Avancées avec Recherche
+            </h3>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Auteur Principal <span class="required-indicator">*</span>
+                        </label>
+                        <select class="form-select searchable-select" name="auteur_principal" id="auteurPrincipal" required>
+                            <option value="">Rechercher et sélectionner un auteur...</option>
+                            <optgroup label="Administrateurs">
+                                <option value="1">Marie Dupont - marie.dupont@mkba.com</option>
+                                <option value="2">Pierre Martin - pierre.martin@mkba.com</option>
+                                <option value="3">Sophie Bernard - sophie.bernard@mkba.com</option>
+                                <option value="4">Jean Petit - jean.petit@mkba.com</option>
+                            </optgroup>
+                            <optgroup label="Éditeurs">
+                                <option value="5">Claire Durand - claire.durand@mkba.com</option>
+                                <option value="6">Luc Moreau - luc.moreau@mkba.com</option>
+                                <option value="7">Julie Simon - julie.simon@mkba.com</option>
+                                <option value="8">Paul Michel - paul.michel@mkba.com</option>
+                            </optgroup>
+                            <optgroup label="Contributeurs">
+                                <option value="9">Emma Leroy - emma.leroy@mkba.com</option>
+                                <option value="10">Thomas Roux - thomas.roux@mkba.com</option>
+                                <option value="11">Isabelle Fournier - isabelle.fournier@mkba.com</option>
+                                <option value="12">Antoine Girard - antoine.girard@mkba.com</option>
+                                <option value="13">Camille Bonnet - camille.bonnet@mkba.com</option>
+                                <option value="14">Nicolas Dupuis - nicolas.dupuis@mkba.com</option>
+                                <option value="15">Sylvie Lambert - sylvie.lambert@mkba.com</option>
+                            </optgroup>
+                        </select>
+                        <div class="help-text">Recherchez et sélectionnez l'auteur principal du document</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Collaborateurs</label>
+                        <select class="form-select searchable-select" name="collaborateurs[]" id="collaborateurs" multiple>
+                            <option value="1">Marie Dupont - Administrateur</option>
+                            <option value="2">Pierre Martin - Administrateur</option>
+                            <option value="3">Sophie Bernard - Éditeur</option>
+                            <option value="4">Jean Petit - Éditeur</option>
+                            <option value="5">Claire Durand - Contributeur</option>
+                            <option value="6">Luc Moreau - Contributeur</option>
+                            <option value="7">Julie Simon - Relecteur</option>
+                            <option value="8">Paul Michel - Relecteur</option>
+                            <option value="9">Emma Leroy - Designer</option>
+                            <option value="10">Thomas Roux - Developer</option>
+                        </select>
+                        <div class="help-text">Sélectionnez plusieurs collaborateurs (utilisez Ctrl+clic)</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Catégorie avec filtrage</label>
+                        <select class="form-select searchable-select" name="categorie_filterable" id="categorieFilterable">
+                            <option value="">Tapez pour filtrer les catégories...</option>
+                            <optgroup label="Documentation">
+                                <option value="doc-guide">Guide utilisateur</option>
+                                <option value="doc-manual">Manuel technique</option>
+                                <option value="doc-tutorial">Tutoriel</option>
+                                <option value="doc-faq">FAQ</option>
+                            </optgroup>
+                            <optgroup label="Administration">
+                                <option value="admin-procedure">Procédure administrative</option>
+                                <option value="admin-formulaire">Formulaire officiel</option>
+                                <option value="admin-regulation">Réglementation</option>
+                                <option value="admin-policy">Politique interne</option>
+                            </optgroup>
+                            <optgroup label="Communication">
+                                <option value="comm-newsletter">Newsletter</option>
+                                <option value="comm-announce">Annonce</option>
+                                <option value="comm-press">Communiqué de presse</option>
+                                <option value="comm-report">Rapport d'activité</option>
+                            </optgroup>
+                            <optgroup label="Technique">
+                                <option value="tech-spec">Spécification technique</option>
+                                <option value="tech-api">Documentation API</option>
+                                <option value="tech-architecture">Architecture système</option>
+                                <option value="tech-security">Sécurité</option>
+                            </optgroup>
+                        </select>
+                        <div class="help-text">Filtrez en tapant directement dans le champ</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Tags prédéfinis</label>
+                        <select class="form-select searchable-select" name="tags_predefinis[]" id="tagsPredefinis" multiple>
+                            <option value="urgent">🔥 Urgent</option>
+                            <option value="important">⭐ Important</option>
+                            <option value="public">🌐 Public</option>
+                            <option value="interne">🏢 Interne</option>
+                            <option value="confidentiel">🔒 Confidentiel</option>
+                            <option value="brouillon">📝 Brouillon</option>
+                            <option value="archive">📦 Archive</option>
+                            <option value="en-cours">⏳ En cours</option>
+                            <option value="valide">✅ Validé</option>
+                            <option value="obsolete">❌ Obsolète</option>
+                            <option value="formation">🎓 Formation</option>
+                            <option value="procedure">📋 Procédure</option>
+                            <option value="template">📄 Template</option>
+                            <option value="exemple">💡 Exemple</option>
+                        </select>
+                        <div class="help-text">Sélectionnez plusieurs tags prédéfinis</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <label class="form-label">Références et documents liés</label>
+                        <select class="form-select searchable-select" name="documents_lies[]" id="documentsLies" multiple>
+                            <option value="doc1">Document #001 - Procédure d'authentification</option>
+                            <option value="doc2">Document #002 - Guide d'installation</option>
+                            <option value="doc3">Document #003 - Manuel utilisateur v2.1</option>
+                            <option value="doc4">Document #004 - Spécifications techniques</option>
+                            <option value="doc5">Document #005 - Charte graphique officielle</option>
+                            <option value="doc6">Document #006 - Procédure de sauvegarde</option>
+                            <option value="doc7">Document #007 - Guide de démarrage rapide</option>
+                            <option value="doc8">Document #008 - Documentation API REST</option>
+                            <option value="doc9">Document #009 - Politique de sécurité</option>
+                            <option value="doc10">Document #010 - Règlement intérieur</option>
+                            <option value="doc11">Document #011 - Guide de contribution</option>
+                            <option value="doc12">Document #012 - Architecture système</option>
+                            <option value="doc13">Document #013 - Plan de formation</option>
+                            <option value="doc14">Document #014 - Procédure d'urgence</option>
+                            <option value="doc15">Document #015 - Modèles de documents</option>
+                        </select>
+                        <div class="help-text">Liez ce document à d'autres documents existants pour créer des références croisées</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <label class="form-label">Template avec aperçu visuel</label>
+                        <select class="form-select" name="template_visuel" id="templateVisuel">
+                            <option value="">Sélectionner un template avec aperçu...</option>
+                            <option value="modern" data-image="https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=64&h=64&fit=crop&crop=center" data-description="Design moderne et épuré">Template Moderne</option>
+                            <option value="classic" data-image="https://images.unsplash.com/photo-1586717791821-3f44a563fa4c?w=64&h=64&fit=crop&crop=center" data-description="Style classique et professionnel">Template Classique</option>
+                            <option value="creative" data-image="https://images.unsplash.com/photo-1558655146-d09347e92766?w=64&h=64&fit=crop&crop=center" data-description="Design créatif et coloré">Template Créatif</option>
+                            <option value="minimal" data-image="https://images.unsplash.com/photo-1586953208448-b95a79798f07?w=64&h=64&fit=crop&crop=center" data-description="Minimaliste et élégant">Template Minimal</option>
+                            <option value="corporate" data-image="https://images.unsplash.com/photo-1557804506-669a67965ba0?w=64&h=64&fit=crop&crop=center" data-description="Style corporate et sérieux">Template Corporate</option>
+                            <option value="blog" data-image="https://images.unsplash.com/photo-1486312338219-ce68e2c6b696?w=64&h=64&fit=crop&crop=center" data-description="Optimisé pour les articles de blog">Template Blog</option>
+                        </select>
+                        <div class="help-text">Choisissez un template avec aperçu visuel pour la mise en page</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 2: Champs numériques et mesures -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <i class="bi-calculator text-primary me-2"></i>
+                Champs Numériques & Mesures
+            </h3>
+            
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label class="form-label">Ordre d'affichage</label>
+                        <input type="number" class="form-control" name="ordre" min="0" step="1" value="0">
+                        <div class="help-text">Position dans la liste (0 = premier)</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre de vues</label>
+                        <input type="number" class="form-control" name="vues" min="0" readonly value="0">
+                        <div class="help-text">Compteur automatique</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label class="form-label">Prix (€)</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" name="prix" step="0.01" min="0" 
+                                   placeholder="0.00">
+                            <span class="input-group-text">€</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-3">
+                        <label class="form-label">Pourcentage</label>
+                        <div class="input-group">
+                            <input type="number" class="form-control" name="pourcentage" step="0.1" 
+                                   min="0" max="100" placeholder="0.0">
+                            <span class="input-group-text">%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Priorité</label>
+                        <input type="range" class="form-range" name="priorite" min="1" max="10" value="5" 
+                               oninput="document.getElementById('prioriteOutput').textContent = this.value">
+                        <div class="d-flex justify-content-between">
+                            <small>Faible (1)</small>
+                            <span class="range-output" id="prioriteOutput">5</span>
+                            <small>Élevée (10)</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Couleur du thème</label>
+                        <div class="form-group-inline">
+                            <input type="color" class="form-control form-control-color" name="couleur" value="#6d5192">
+                            <span class="color-preview" id="colorPreview" style="background: #6d5192;"></span>
+                        </div>
+                        <div class="help-text">Couleur associée au document</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 3: Dates et temps -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <i class="bi-calendar-event text-primary me-2"></i>
+                Dates & Planification
+            </h3>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Date de publication</label>
+                        <input type="date" class="form-control" name="date_publication">
+                        <div class="help-text">Date de mise en ligne</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Date d'expiration</label>
+                        <input type="date" class="form-control" name="date_expiration">
+                        <div class="help-text">Date de fin de validité</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Heure de publication</label>
+                        <input type="time" class="form-control" name="heure_publication" value="09:00">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Date et heure complètes</label>
+                        <input type="datetime-local" class="form-control" name="datetime_complet">
+                        <div class="help-text">Date et heure précises</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Mois de référence</label>
+                        <input type="month" class="form-control" name="mois_reference">
+                        <div class="help-text">Période de référence</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 4: Sélections et choix -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <i class="bi-list-check text-primary me-2"></i>
+                Sélections & Choix Multiples
+            </h3>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Catégorie <span class="required-indicator">*</span>
+                        </label>
+                        <select class="form-select" name="categorie" required>
+                            <option value="">Sélectionnez une catégorie</option>
+                            <option value="documentation">Documentation</option>
+                            <option value="procedure">Procédure</option>
+                            <option value="formulaire">Formulaire</option>
+                            <option value="guide">Guide</option>
+                            <option value="rapport">Rapport</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Département</label>
+                        <select class="form-select" name="departement">
+                            <option value="">Tous les départements</option>
+                            <option value="administration">Administration</option>
+                            <option value="finances">Finances</option>
+                            <option value="juridique">Juridique</option>
+                            <option value="technique">Technique</option>
+                            <option value="communication">Communication</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <label class="form-label">Type de document</label>
+                <div class="radio-cards">
+                    <label class="radio-card">
+                        <input type="radio" name="type_document" value="interne" style="display: none;">
+                        <div class="radio-card-content">
+                            <i class="bi-building text-primary mb-2" style="font-size: 2rem;"></i>
+                            <h6>Document Interne</h6>
+                            <small class="text-muted">Usage interne uniquement</small>
+                        </div>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="type_document" value="public" style="display: none;">
+                        <div class="radio-card-content">
+                            <i class="bi-globe text-primary mb-2" style="font-size: 2rem;"></i>
+                            <h6>Document Public</h6>
+                            <small class="text-muted">Accessible à tous</small>
+                        </div>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="type_document" value="confidentiel" style="display: none;">
+                        <div class="radio-card-content">
+                            <i class="bi-shield-lock text-primary mb-2" style="font-size: 2rem;"></i>
+                            <h6>Confidentiel</h6>
+                            <small class="text-muted">Accès restreint</small>
+                        </div>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Langues disponibles</label>
+                <div class="checkbox-grid">
+                    <div class="checkbox-item">
+                        <input type="checkbox" class="form-check-input me-2" name="langues[]" value="fr" id="lang_fr" checked>
+                        <label for="lang_fr">🇫🇷 Français</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" class="form-check-input me-2" name="langues[]" value="en" id="lang_en">
+                        <label for="lang_en">🇬🇧 Anglais</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" class="form-check-input me-2" name="langues[]" value="es" id="lang_es">
+                        <label for="lang_es">🇪🇸 Espagnol</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" class="form-check-input me-2" name="langues[]" value="de" id="lang_de">
+                        <label for="lang_de">🇩🇪 Allemand</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Statut de publication</label>
+                        <select class="form-select" name="statut">
+                            <option value="brouillon">📝 Brouillon</option>
+                            <option value="en_revision">👁️ En révision</option>
+                            <option value="publie" selected>✅ Publié</option>
+                            <option value="archive">📦 Archivé</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Niveau d'accès</label>
+                        <select class="form-select" name="niveau_acces">
+                            <option value="1">Niveau 1 - Public</option>
+                            <option value="2">Niveau 2 - Utilisateurs enregistrés</option>
+                            <option value="3" selected>Niveau 3 - Administrateurs</option>
+                            <option value="4">Niveau 4 - Super administrateurs</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 5: Upload de fichiers AMÉLIORÉE -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <i class="bi-cloud-upload text-primary me-2"></i>
+                Gestion des Fichiers
+            </h3>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Fichier principal</label>
+                        <input type="file" class="form-control" name="fichier_principal" id="fichierPrincipal"
+                               accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.webp,.svg" style="display: none;">
+                        <div class="file-preview single-file-container" id="previewPrincipal" onclick="document.getElementById('fichierPrincipal').click()">
+                            <div class="file-preview-placeholder">
+                                <i class="bi-cloud-upload text-muted" style="font-size: 3rem;"></i>
+                                <p class="text-muted mt-2">Glissez-déposez un fichier ici ou cliquez pour sélectionner</p>
+                                <small class="text-muted">PDF, Office, Images (max. 10MB)</small>
+                            </div>
+                            <div class="file-preview-content" id="contentPrincipal"></div>
+                            <button type="button" class="file-remove-btn hidden" id="removePrincipalBtn" 
+                                    onclick="event.stopPropagation(); removeMainFile()" title="Supprimer le fichier">
+                                <i class="bi-x-lg"></i>
+                            </button>
+                        </div>
+                        <div class="help-text">Document principal associé à cette entrée</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label">Image de couverture</label>
+                        <input type="file" class="form-control" name="image_couverture" id="imageCouverture"
+                               accept="image/*" style="display: none;">
+                        <div class="file-preview single-file-container" id="previewImage" onclick="document.getElementById('imageCouverture').click()">
+                            <div class="file-preview-placeholder">
+                                <i class="bi-image text-muted" style="font-size: 3rem;"></i>
+                                <p class="text-muted mt-2">Image de couverture</p>
+                                <small class="text-muted">JPG, PNG, WebP (max. 5MB)</small>
+                            </div>
+                            <div class="file-preview-content" id="contentImage"></div>
+                            <button type="button" class="file-remove-btn hidden" id="removeImageBtn" 
+                                    onclick="event.stopPropagation(); removeCoverImage()" title="Supprimer l'image">
+                                <i class="bi-x-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Fichiers annexes</label>
+                <input type="file" class="form-control" name="fichiers_annexes[]" multiple id="fichiersAnnexes"
+                       accept=".pdf,.doc,.docx,.xls,.xlsx,.zip,.rar">
+                <div class="help-text mb-2">Plusieurs fichiers peuvent être sélectionnés (Ctrl+clic)</div>
+                
+                <div class="files-list" id="annexesList">
+                    <!-- Les fichiers annexes seront affichés ici -->
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 6: Collection dynamique -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <i class="bi-collection text-primary me-2"></i>
+                Collections Dynamiques
+            </h3>
+            
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <label class="form-label mb-0">Contacts associés</label>
+                    <button type="button" class="btn btn-add-item" onclick="addContact()">
+                        <i class="bi-plus-circle me-1"></i>Ajouter un contact
+                    </button>
+                </div>
+                <div id="contactsCollection">
+                    <div class="collection-item">
+                        <button type="button" class="btn btn-remove-item" onclick="confirmRemoveContact(this)">
+                            <i class="bi-trash"></i>
+                        </button>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label class="form-label">Nom</label>
+                                <input type="text" class="form-control" name="contacts[0][nom]" placeholder="Nom du contact">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" name="contacts[0][email]" placeholder="Email du contact">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Fonction</label>
+                                <input type="text" class="form-control" name="contacts[0][fonction]" placeholder="Fonction">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <label class="form-label mb-0">Liens utiles</label>
+                    <button type="button" class="btn btn-add-item" onclick="addLink()">
+                        <i class="bi-plus-circle me-1"></i>Ajouter un lien
+                    </button>
+                </div>
+                <div id="linksCollection">
+                    <div class="collection-item">
+                        <button type="button" class="btn btn-remove-item" onclick="confirmRemoveLink(this)">
+                            <i class="bi-trash"></i>
+                        </button>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">Titre du lien</label>
+                                <input type="text" class="form-control" name="liens[0][titre]" placeholder="Titre du lien">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">URL</label>
+                                <input type="url" class="form-control" name="liens[0][url]" placeholder="https://...">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 7: Paramètres et options -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <i class="bi-gear text-primary me-2"></i>
+                Paramètres & Options
+            </h3>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="est_actif" id="estActif" checked>
+                            <label class="form-check-label" for="estActif">
+                                <strong>Document actif</strong>
+                            </label>
+                        </div>
+                        <div class="help-text">Un document inactif n'est pas visible publiquement</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="commentaires_autorises" id="commentairesAutorises">
+                            <label class="form-check-label" for="commentairesAutorises">
+                                Autoriser les commentaires
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="telechargement_autorise" id="telechargementAutorise" checked>
+                            <label class="form-check-label" for="telechargementAutorise">
+                                Autoriser le téléchargement
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="epingle" id="epingle">
+                            <label class="form-check-label" for="epingle">
+                                Épingler en haut de liste
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="featured" id="featured">
+                            <label class="form-check-label" for="featured">
+                                Mettre en avant (Featured)
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="notifications_actives" id="notificationsActives">
+                            <label class="form-check-label" for="notificationsActives">
+                                Notifications actives
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 8: Champs cachés et système -->
+        <div class="form-section">
+            <h3 class="section-title">
+                <i class="bi-shield-lock text-primary me-2"></i>
+                Informations Système
+            </h3>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Mot de passe (pour sections protégées)</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" name="mot_de_passe" id="motDePasse">
+                            <button class="btn btn-outline-secondary" type="button" onclick="togglePassword()">
+                                <i class="bi-eye" id="passwordToggleIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">UUID (généré automatiquement)</label>
+                        <input type="text" class="form-control" name="uuid" readonly 
+                               value="mkba_{{ 'now'|date('YmdHis') }}_{{ random(10000, 99999) }}" 
+                               style="background: #f8f9fa;">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label class="form-label">Version du document</label>
+                        <input type="text" class="form-control" name="version" value="1.0" readonly 
+                               style="background: #f8f9fa;">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Champs cachés pour les métadonnées -->
+            <input type="hidden" name="created_by" value="{{ app.user ? app.user.id : 1 }}">
+            <input type="hidden" name="ip_creation" value="127.0.0.1">
+            <input type="hidden" name="user_agent" value="MK BA Admin">
+            
+            <div class="alert alert-info">
+                <i class="bi-info-circle me-2"></i>
+                <strong>Information:</strong> Les champs système sont gérés automatiquement par l'application.
+            </div>
+        </div>
+
+        <!-- Actions finales -->
+        <div class="form-section">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <button type="submit" class="btn btn-submit me-3">
+                        <i class="bi-check-circle me-2"></i>
+                        Créer le document complet
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary me-2" onclick="saveDraft()">
+                        <i class="bi-save me-2"></i>
+                        Enregistrer comme brouillon
+                    </button>
+                    <a href="{{ path('admin_document_index') }}" class="btn btn-outline-danger" onclick="return confirmLeave()">
+                        <i class="bi-x-circle me-2"></i>
+                        Annuler
+                    </a>
+                </div>
+                <div class="col-md-4 text-end">
+                    <small class="text-muted">
+                        <i class="bi-info-circle me-1"></i>
+                        Les champs marqués d'un <span class="required-indicator">*</span> sont obligatoires
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+    </form>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <!-- jQuery (requis pour Select2) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <!-- Quill.js -->
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    
+    <script>
+        // Variables globales
+        let contactIndex = 1;
+        let linkIndex = 1;
+        let tagsArray = [];
+        let quillEditor;
+        let formHasChanges = false;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeForm();
+            initializeSearchableSelects();
+            initializeWysiwyg();
+            setupFileHandlers();
+            setupTagsInput();
+            setupColorPicker();
+            setupFormValidation();
+            setupChangeTracking();
+        });
+
+        function initializeForm() {
+            // Initialiser les tooltips et autres composants Bootstrap
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
+            // Gestion des cartes radio
+            setupRadioCards();
+        }
+
+        function initializeSearchableSelects() {
+            // Configuration Select2 pour tous les selects avec classe searchable-select
+            $('.searchable-select').select2({
+                placeholder: function() {
+                    return $(this).attr('placeholder') || 'Rechercher et sélectionner...';
+                },
+                allowClear: true,
+                width: '100%',
+                language: {
+                    noResults: function() {
+                        return "Aucun résultat trouvé";
+                    },
+                    inputTooShort: function() {
+                        return "Tapez au moins 1 caractère pour rechercher";
+                    },
+                    searching: function() {
+                        return "Recherche en cours...";
+                    },
+                    loadingMore: function() {
+                        return "Chargement d'autres résultats...";
+                    }
+                }
+            });
+
+            // Configuration spéciale pour les selects multiples
+            $('#collaborateurs, #tagsPredefinis, #documentsLies').select2({
+                placeholder: 'Sélectionnez un ou plusieurs éléments...',
+                allowClear: true,
+                width: '100%',
+                closeOnSelect: false,
+                language: {
+                    noResults: function() {
+                        return "Aucun résultat trouvé";
+                    }
+                }
+            });
+
+            // Configuration pour le select avec images (template visuel)
+            $('#templateVisuel').select2({
+                placeholder: 'Sélectionnez un template...',
+                allowClear: true,
+                width: '100%',
+                templateResult: formatTemplateOption,
+                templateSelection: formatTemplateSelection,
+                escapeMarkup: function(markup) {
+                    return markup;
+                }
+            });
+
+            // Événement de changement pour l'auteur principal
+            $('#auteurPrincipal').on('change', function() {
+                const selectedValue = $(this).val();
+                const selectedText = $(this).find('option:selected').text();
+                
+                if (selectedValue) {
+                    console.log('Auteur sélectionné:', selectedValue, selectedText);
+                    formHasChanges = true;
+                }
+            });
+
+            // Événement pour les collaborateurs
+            $('#collaborateurs').on('change', function() {
+                const selectedValues = $(this).val();
+                console.log('Collaborateurs sélectionnés:', selectedValues);
+                updateCollaboratorsDisplay(selectedValues);
+                formHasChanges = true;
+            });
+        }
+
+        // Formatage des options pour le select avec images
+        function formatTemplateOption(option) {
+            if (!option.id) {
+                return option.text;
+            }
+
+            const $option = $(option.element);
+            const imageUrl = $option.data('image');
+            const description = $option.data('description');
+
+            if (!imageUrl) {
+                return option.text;
+            }
+
+            return $(`
+                <div class="select2-option-with-image">
+                    <img src="${imageUrl}" class="select2-option-image" alt="${option.text}">
+                    <div class="select2-option-content">
+                        <div class="select2-option-title">${option.text}</div>
+                        <div class="select2-option-subtitle">${description || ''}</div>
+                    </div>
+                </div>
+            `);
+        }
+
+        function formatTemplateSelection(option) {
+            if (!option.id) {
+                return option.text;
+            }
+
+            const $option = $(option.element);
+            const imageUrl = $option.data('image');
+
+            if (!imageUrl) {
+                return option.text;
+            }
+
+            return $(`
+                <div class="select2-option-with-image">
+                    <img src="${imageUrl}" class="select2-option-image" alt="${option.text}">
+                    <span class="select2-option-title">${option.text}</span>
+                </div>
+            `);
+        }
+
+        function updateCollaboratorsDisplay(selectedValues) {
+            // Optionnel: Afficher les collaborateurs sélectionnés quelque part
+            if (selectedValues && selectedValues.length > 0) {
+                console.log('Nombre de collaborateurs sélectionnés:', selectedValues.length);
+            }
+        }
+
+        function initializeWysiwyg() {
+            // Configuration complète de Quill.js
+            var toolbarOptions = [
+                [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                [{ 'font': [] }],
+                [{ 'size': ['small', false, 'large', 'huge'] }],
+                
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'color': [] }, { 'background': [] }],
+                [{ 'script': 'sub'}, { 'script': 'super' }],
+                
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'indent': '-1'}, { 'indent': '+1' }],
+                [{ 'align': [] }],
+                
+                ['blockquote', 'code-block'],
+                ['link', 'image', 'video'],
+                
+                ['clean']
+            ];
+
+            quillEditor = new Quill('#editor', {
+                theme: 'snow',
+                modules: {
+                    toolbar: toolbarOptions,
+                    history: {
+                        delay: 1000,
+                        maxStack: 50,
+                        userOnly: true
+                    }
+                },
+                formats: [
+                    'header', 'font', 'size',
+                    'bold', 'italic', 'underline', 'strike',
+                    'color', 'background', 'script',
+                    'list', 'bullet', 'indent', 'align',
+                    'blockquote', 'code-block',
+                    'link', 'image', 'video'
+                ],
+                placeholder: 'Commencez à taper votre contenu ici...'
+            });
+
+            // Événements de l'éditeur
+            quillEditor.on('text-change', function(delta, oldDelta, source) {
+                // Mettre à jour le champ caché avec le contenu HTML
+                document.getElementById('contenuWysiwyg').value = quillEditor.root.innerHTML;
+                formHasChanges = true;
+            });
+
+            quillEditor.on('selection-change', function(range, oldRange, source) {
+                if (range) {
+                    document.getElementById('wysiwygContainer').classList.add('focused');
+                } else {
+                    document.getElementById('wysiwygContainer').classList.remove('focused');
+                }
+            });
+
+            // Gérer l'upload d'images
+            quillEditor.getModule('toolbar').addHandler('image', function() {
+                selectLocalImage();
+            });
+        }
+
+        function selectLocalImage() {
+            const input = document.createElement('input');
+            input.setAttribute('type', 'file');
+            input.setAttribute('accept', 'image/*');
+            input.click();
+
+            input.onchange = function() {
+                const file = input.files[0];
+                if (file) {
+                    // Dans un vrai projet, vous uploaderiez l'image sur le serveur
+                    // Ici, nous créons juste une URL temporaire
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const range = quillEditor.getSelection();
+                        quillEditor.insertEmbed(range.index, 'image', e.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+        }
+
+        function setupRadioCards() {
+            const radioCards = document.querySelectorAll('.radio-card');
+            radioCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const radio = this.querySelector('input[type="radio"]');
+                    if (radio) {
+                        radio.checked = true;
+                        formHasChanges = true;
+                        
+                        // Retirer la sélection des autres cartes du même groupe
+                        const groupName = radio.name;
+                        const otherCards = document.querySelectorAll(`input[name="${groupName}"]`);
+                        otherCards.forEach(otherRadio => {
+                            if (otherRadio !== radio) {
+                                const otherCard = otherRadio.closest('.radio-card');
+                                if (otherCard) {
+                                    otherCard.style.borderColor = '#e5e7eb';
+                                    otherCard.style.background = '';
+                                }
+                            }
+                        });
+                        
+                        // Appliquer le style à la carte sélectionnée
+                        this.style.borderColor = 'var(--mk-primary)';
+                        this.style.background = 'rgba(109, 81, 146, 0.05)';
+                    }
+                });
+            });
+        }
+
+        function setupFileHandlers() {
+            // Gestionnaire pour le fichier principal
+            setupSingleFileHandler('fichierPrincipal', 'previewPrincipal', 'contentPrincipal', 'removePrincipalBtn');
+            
+            // Gestionnaire pour l'image de couverture
+            setupSingleFileHandler('imageCouverture', 'previewImage', 'contentImage', 'removeImageBtn');
+
+            // Gestionnaire pour les fichiers annexes
+            setupMultipleFileHandler('fichiersAnnexes', 'annexesList');
+        }
+
+        function setupSingleFileHandler(inputId, previewId, contentId, removeBtnId) {
+            const fileInput = document.getElementById(inputId);
+            const filePreview = document.getElementById(previewId);
+            const fileContent = document.getElementById(contentId);
+            const removeBtn = document.getElementById(removeBtnId);
+            
+            if (fileInput && filePreview) {
+                fileInput.addEventListener('change', function(e) {
+                    if (e.target.files[0]) {
+                        handleFileSelect(e.target.files[0], fileContent, filePreview, removeBtn);
+                        formHasChanges = true;
+                    }
+                });
+                
+                // Drag & Drop
+                filePreview.addEventListener('dragover', handleDragOver);
+                filePreview.addEventListener('dragleave', handleDragLeave);
+                filePreview.addEventListener('drop', function(e) {
+                    handleFileDrop(e, fileInput, fileContent, filePreview, removeBtn);
+                });
+            }
+        }
+
+        function setupMultipleFileHandler(inputId, listId) {
+            const fileInput = document.getElementById(inputId);
+            const filesList = document.getElementById(listId);
+            
+            if (fileInput && filesList) {
+                fileInput.addEventListener('change', function(e) {
+                    handleMultipleFiles(e.target.files, filesList);
+                    if (e.target.files.length > 0) formHasChanges = true;
+                });
+            }
+        }
+
+        function handleMultipleFiles(files, listElement) {
+            listElement.innerHTML = ''; // Vider la liste existante
+            
+            Array.from(files).forEach((file, index) => {
+                const fileItem = createFileItem(file, index);
+                listElement.appendChild(fileItem);
+            });
+        }
+
+        function createFileItem(file, index) {
+            const fileSize = formatBytes(file.size);
+            const fileType = file.type || 'Type inconnu';
+            const iconClass = getFileIcon(file.type);
+            
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.dataset.index = index;
+            
+            fileItem.innerHTML = `
+                <div class="file-item-info">
+                    <div class="file-item-icon">
+                        <i class="${iconClass} text-primary"></i>
+                    </div>
+                    <div class="file-item-details">
+                        <div class="file-item-name">${file.name}</div>
+                        <div class="file-item-meta">${fileSize} • ${fileType}</div>
+                    </div>
+                </div>
+                <div class="file-item-actions">
+                    <button type="button" class="btn-file-remove" onclick="confirmRemoveAnnexeFile(${index})" title="Supprimer ce fichier">
+                        <i class="bi-trash"></i>
+                    </button>
+                </div>
+            `;
+            
+            return fileItem;
+        }
+
+        function handleFileSelect(file, contentElement, previewElement, removeBtn) {
+            if (file && contentElement) {
+                displayFilePreview(file, contentElement, previewElement, removeBtn);
+            }
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.currentTarget.classList.add('dragover');
+        }
+
+        function handleDragLeave(event) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('dragover');
+        }
+
+        function handleFileDrop(event, inputElement, contentElement, previewElement, removeBtn) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('dragover');
+            
+            const files = event.dataTransfer.files;
+            if (files.length > 0 && inputElement && contentElement) {
+                const file = files[0];
+                
+                // Mettre à jour l'input file
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                inputElement.files = dt.files;
+                
+                displayFilePreview(file, contentElement, previewElement, removeBtn);
+                formHasChanges = true;
+            }
+        }
+
+        function displayFilePreview(file, contentElement, previewElement, removeBtn) {
+            const fileSize = formatBytes(file.size);
+            const fileType = file.type || 'Type inconnu';
+            
+            let previewHTML = `
+                <div class="file-info">
+                    <div class="d-flex align-items-center">
+                        <i class="bi-file-earmark text-primary me-2" style="font-size: 1.5rem;"></i>
+                        <div>
+                            <div class="fw-bold">${file.name}</div>
+                            <small class="text-muted">${fileSize} • ${fileType}</small>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Prévisualisation pour les images
+            if (file.type && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewHTML = `
+                        <img src="${e.target.result}" class="preview-image mb-2" alt="Prévisualisation">
+                        ${previewHTML}
+                    `;
+                    contentElement.innerHTML = previewHTML;
+                    showFilePreview(previewElement, removeBtn);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                // Icône par type de fichier
+                let iconClass = getFileIcon(file.type);
+                previewHTML = `
+                    <i class="${iconClass} text-primary mb-2" style="font-size: 4rem;"></i>
+                    ${previewHTML}
+                `;
+                contentElement.innerHTML = previewHTML;
+                showFilePreview(previewElement, removeBtn);
+            }
+        }
+
+        function showFilePreview(previewElement, removeBtn) {
+            // Ajouter classe has-file et afficher le bouton de suppression
+            previewElement.classList.add('has-file');
+            if (removeBtn) {
+                removeBtn.classList.remove('hidden');
+            }
+        }
+
+        function hideFilePreview(previewElement, removeBtn) {
+            // Retirer classe has-file et masquer le bouton de suppression
+            previewElement.classList.remove('has-file');
+            if (removeBtn) {
+                removeBtn.classList.add('hidden');
+            }
+        }
+
+        function removeMainFile() {
+            const fileInput = document.getElementById('fichierPrincipal');
+            const previewElement = document.getElementById('previewPrincipal');
+            const contentElement = document.getElementById('contentPrincipal');
+            const removeBtn = document.getElementById('removePrincipalBtn');
+            
+            // Vider l'input file
+            fileInput.value = '';
+            
+            // Vider le contenu
+            contentElement.innerHTML = '';
+            
+            // Masquer la prévisualisation
+            hideFilePreview(previewElement, removeBtn);
+            
+            formHasChanges = true;
+            showNotification('Fichier principal supprimé', 'success');
+        }
+
+        function removeCoverImage() {
+            const fileInput = document.getElementById('imageCouverture');
+            const previewElement = document.getElementById('previewImage');
+            const contentElement = document.getElementById('contentImage');
+            const removeBtn = document.getElementById('removeImageBtn');
+            
+            // Vider l'input file
+            fileInput.value = '';
+            
+            // Vider le contenu
+            contentElement.innerHTML = '';
+            
+            // Masquer la prévisualisation
+            hideFilePreview(previewElement, removeBtn);
+            
+            formHasChanges = true;
+            showNotification('Image de couverture supprimée', 'success');
+        }
+
+        function confirmRemoveAnnexeFile(index) {
+            showGenericModal({
+                title: 'Supprimer le fichier',
+                bodyTitle: 'Confirmer la suppression',
+                bodyText: 'Êtes-vous sûr de vouloir supprimer ce fichier annexe ?',
+                confirmText: 'Supprimer',
+                confirmClass: 'btn-danger',
+                icon: 'bi-trash',
+                iconClass: 'danger',
+                onConfirm: () => removeAnnexeFile(index)
+            });
+        }
+
+        function removeAnnexeFile(index) {
+            const fileInput = document.getElementById('fichiersAnnexes');
+            const filesList = document.getElementById('annexesList');
+            const fileItem = filesList.querySelector(`[data-index="${index}"]`);
+            
+            if (fileItem) {
+                fileItem.remove();
+                
+                // Recréer la liste des fichiers sans celui supprimé
+                const dt = new DataTransfer();
+                const files = Array.from(fileInput.files);
+                
+                files.forEach((file, i) => {
+                    if (i !== index) {
+                        dt.items.add(file);
+                    }
+                });
+                
+                fileInput.files = dt.files;
+                
+                // Réafficher la liste mise à jour
+                handleMultipleFiles(fileInput.files, filesList);
+                formHasChanges = true;
+                showNotification('Fichier annexe supprimé', 'success');
+            }
+        }
+
+        // ========== GESTION DU MODAL GÉNÉRIQUE ==========
+        function showGenericModal(options) {
+            const modal = document.getElementById('genericModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalIcon = document.getElementById('modalIcon');
+            const modalBodyTitle = document.getElementById('modalBodyTitle');
+            const modalBodyText = document.getElementById('modalBodyText');
+            const modalBodyIcon = document.getElementById('modalBodyIcon');
+            const modalIconContainer = document.getElementById('modalIconContainer');
+            const confirmBtn = document.getElementById('modalConfirmBtn');
+            const cancelBtn = document.getElementById('modalCancelBtn');
+
+            // Configuration par défaut
+            const config = {
+                title: options.title || 'Confirmation',
+                bodyTitle: options.bodyTitle || 'Êtes-vous sûr ?',
+                bodyText: options.bodyText || 'Cette action ne peut pas être annulée.',
+                confirmText: options.confirmText || 'Confirmer',
+                cancelText: options.cancelText || 'Annuler',
+                confirmClass: options.confirmClass || 'btn-primary',
+                icon: options.icon || 'bi-exclamation-triangle',
+                iconClass: options.iconClass || 'warning',
+                onConfirm: options.onConfirm || function() {},
+                onCancel: options.onCancel || function() {}
+            };
+
+            // Mettre à jour le contenu
+            modalTitle.textContent = config.title;
+            modalIcon.className = config.icon;
+            modalBodyTitle.textContent = config.bodyTitle;
+            modalBodyText.textContent = config.bodyText;
+            modalBodyIcon.className = config.icon;
+            
+            // Mettre à jour les classes d'icône
+            modalIconContainer.className = `modal-icon ${config.iconClass}`;
+            
+            // Mettre à jour les boutons
+            confirmBtn.textContent = config.confirmText;
+            confirmBtn.className = `btn ${config.confirmClass}`;
+            cancelBtn.textContent = config.cancelText;
+
+            // Gestionnaires d'événements
+            const handleConfirm = () => {
+                config.onConfirm();
+                bootstrap.Modal.getInstance(modal).hide();
+                cleanup();
+            };
+
+            const handleCancel = () => {
+                config.onCancel();
+                bootstrap.Modal.getInstance(modal).hide();
+                cleanup();
+            };
+
+            const cleanup = () => {
+                confirmBtn.removeEventListener('click', handleConfirm);
+                cancelBtn.removeEventListener('click', handleCancel);
+            };
+
+            confirmBtn.addEventListener('click', handleConfirm);
+            cancelBtn.addEventListener('click', handleCancel);
+
+            // Afficher le modal
+            const modalInstance = new bootstrap.Modal(modal);
+            modalInstance.show();
+
+            // Nettoyer lors de la fermeture
+            modal.addEventListener('hidden.bs.modal', cleanup, { once: true });
+        }
+
+        // ========== FONCTIONS DE CONFIRMATION ==========
+        function confirmRemoveContact(button) {
+            showGenericModal({
+                title: 'Supprimer le contact',
+                bodyTitle: 'Confirmer la suppression',
+                bodyText: 'Êtes-vous sûr de vouloir supprimer ce contact ?',
+                confirmText: 'Supprimer',
+                confirmClass: 'btn-danger',
+                icon: 'bi-person-x',
+                iconClass: 'danger',
+                onConfirm: () => removeContact(button)
+            });
+        }
+
+        function confirmRemoveLink(button) {
+            showGenericModal({
+                title: 'Supprimer le lien',
+                bodyTitle: 'Confirmer la suppression',
+                bodyText: 'Êtes-vous sûr de vouloir supprimer ce lien ?',
+                confirmText: 'Supprimer',
+                confirmClass: 'btn-danger',
+                icon: 'bi-link-45deg',
+                iconClass: 'danger',
+                onConfirm: () => removeLink(button)
+            });
+        }
+
+        function confirmLeave() {
+            if (formHasChanges) {
+                return confirm('Vous avez des modifications non sauvegardées. Êtes-vous sûr de vouloir quitter cette page ?');
+            }
+            return true;
+        }
+
+        // Fonction utilitaire pour afficher les notifications
+        function showNotification(message, type = 'info') {
+            if (window.MKBAAdmin && window.MKBAAdmin.showNotification) {
+                window.MKBAAdmin.showNotification(message, type);
+            } else {
+                // Fallback simple si MKBAAdmin n'est pas disponible
+                const alertClass = type === 'error' ? 'danger' : type;
+                const alertHtml = `
+                    <div class="alert alert-${alertClass} alert-dismissible fade show position-fixed" 
+                         style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;" role="alert">
+                        <i class="fas fa-${type === 'success' ? 'check-circle' : (type === 'error' ? 'exclamation-triangle' : 'info-circle')} me-2"></i>
+                        ${message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `;
+                
+                document.body.insertAdjacentHTML('beforeend', alertHtml);
+                
+                // Auto-supprimer après 3 secondes
+                setTimeout(() => {
+                    const alert = document.querySelector('.alert:last-of-type');
+                    if (alert) {
+                        const bsAlert = new bootstrap.Alert(alert);
+                        bsAlert.close();
+                    }
+                }, 3000);
+            }
+        }
+
+        function getFileIcon(mimeType) {
+            if (mimeType === 'application/pdf') return 'bi-file-earmark-pdf';
+            if (mimeType.includes('word') || mimeType.includes('document')) return 'bi-file-earmark-word';
+            if (mimeType.includes('excel') || mimeType.includes('spreadsheet')) return 'bi-file-earmark-excel';
+            if (mimeType.includes('powerpoint') || mimeType.includes('presentation')) return 'bi-file-earmark-ppt';
+            if (mimeType.includes('zip') || mimeType.includes('rar')) return 'bi-file-earmark-zip';
+            return 'bi-file-earmark';
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function setupTagsInput() {
+            const tagsInput = document.getElementById('tagsInput');
+            const tagInput = tagsInput.querySelector('.tag-input');
+            const hiddenInput = document.getElementById('tagsHidden');
+            
+            tagInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const tagValue = this.value.trim();
+                    if (tagValue && !tagsArray.includes(tagValue)) {
+                        addTag(tagValue);
+                        this.value = '';
+                        formHasChanges = true;
+                    }
+                }
+            });
+            
+            tagInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Backspace' && this.value === '' && tagsArray.length > 0) {
+                    removeTag(tagsArray[tagsArray.length - 1]);
+                }
+            });
+        }
+
+        function addTag(tagValue) {
+            tagsArray.push(tagValue);
+            updateTagsDisplay();
+            updateHiddenTagsInput();
+        }
+
+        function removeTag(tagValue) {
+            const index = tagsArray.indexOf(tagValue);
+            if (index > -1) {
+                tagsArray.splice(index, 1);
+                updateTagsDisplay();
+                updateHiddenTagsInput();
+                formHasChanges = true;
+            }
+        }
+
+        function updateTagsDisplay() {
+            const tagsInput = document.getElementById('tagsInput');
+            const tagInput = tagsInput.querySelector('.tag-input');
+            
+            // Supprimer les anciens tags
+            const existingTags = tagsInput.querySelectorAll('.tag-item');
+            existingTags.forEach(tag => tag.remove());
+            
+            // Ajouter les nouveaux tags
+            tagsArray.forEach(tagValue => {
+                const tagElement = document.createElement('div');
+                tagElement.className = 'tag-item';
+                tagElement.innerHTML = `
+                    ${tagValue}
+                    <span class="tag-remove" onclick="removeTag('${tagValue}')">&times;</span>
+                `;
+                tagsInput.insertBefore(tagElement, tagInput);
+            });
+        }
+
+        function updateHiddenTagsInput() {
+            document.getElementById('tagsHidden').value = JSON.stringify(tagsArray);
+        }
+
+        function setupColorPicker() {
+            const colorInput = document.querySelector('input[name="couleur"]');
+            const colorPreview = document.getElementById('colorPreview');
+            
+            if (colorInput && colorPreview) {
+                colorInput.addEventListener('input', function() {
+                    colorPreview.style.background = this.value;
+                    formHasChanges = true;
+                });
+            }
+        }
+
+        // Gestion des collections dynamiques
+        function addContact() {
+            const collection = document.getElementById('contactsCollection');
+            const newItem = document.createElement('div');
+            newItem.className = 'collection-item';
+            newItem.innerHTML = `
+                <button type="button" class="btn btn-remove-item" onclick="confirmRemoveContact(this)">
+                    <i class="bi-trash"></i>
+                </button>
+                <div class="row">
+                    <div class="col-md-4">
+                        <label class="form-label">Nom</label>
+                        <input type="text" class="form-control" name="contacts[${contactIndex}][nom]" placeholder="Nom du contact">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" name="contacts[${contactIndex}][email]" placeholder="Email du contact">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Fonction</label>
+                        <input type="text" class="form-control" name="contacts[${contactIndex}][fonction]" placeholder="Fonction">
+                    </div>
+                </div>
+            `;
+            collection.appendChild(newItem);
+            contactIndex++;
+            formHasChanges = true;
+        }
+
+        function removeContact(button) {
+            button.closest('.collection-item').remove();
+            formHasChanges = true;
+            showNotification('Contact supprimé', 'success');
+        }
+
+        function addLink() {
+            const collection = document.getElementById('linksCollection');
+            const newItem = document.createElement('div');
+            newItem.className = 'collection-item';
+            newItem.innerHTML = `
+                <button type="button" class="btn btn-remove-item" onclick="confirmRemoveLink(this)">
+                    <i class="bi-trash"></i>
+                </button>
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="form-label">Titre du lien</label>
+                        <input type="text" class="form-control" name="liens[${linkIndex}][titre]" placeholder="Titre du lien">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">URL</label>
+                        <input type="url" class="form-control" name="liens[${linkIndex}][url]" placeholder="https://...">
+                    </div>
+                </div>
+            `;
+            collection.appendChild(newItem);
+            linkIndex++;
+            formHasChanges = true;
+        }
+
+        function removeLink(button) {
+            button.closest('.collection-item').remove();
+            formHasChanges = true;
+            showNotification('Lien supprimé', 'success');
+        }
+
+        // ========== SUIVI DES MODIFICATIONS ==========
+        function setupChangeTracking() {
+            // Écouter tous les changements de formulaire
+            const form = document.getElementById('mkbaCompleteForm');
+            const inputs = form.querySelectorAll('input, textarea, select');
+            
+            inputs.forEach(input => {
+                input.addEventListener('change', () => {
+                    formHasChanges = true;
+                });
+                
+                if (input.type === 'text' || input.type === 'email' || input.type === 'url' || input.tagName === 'TEXTAREA') {
+                    input.addEventListener('input', () => {
+                        formHasChanges = true;
+                    });
+                }
+            });
+
+            // Avertir avant de quitter la page
+            window.addEventListener('beforeunload', (e) => {
+                if (formHasChanges) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            });
+        }
+
+        // Utilitaires
+        function togglePassword() {
+            const passwordInput = document.getElementById('motDePasse');
+            const toggleIcon = document.getElementById('passwordToggleIcon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.className = 'bi-eye-slash';
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.className = 'bi-eye';
+            }
+        }
+
+        function saveDraft() {
+            // Sauvegarder le contenu de l'éditeur
+            if (quillEditor) {
+                document.getElementById('contenuWysiwyg').value = quillEditor.root.innerHTML;
+            }
+            
+            // Utiliser le modal générique pour confirmer
+            showGenericModal({
+                title: 'Sauvegarder le brouillon',
+                bodyTitle: 'Brouillon sauvegardé',
+                bodyText: 'Votre travail a été sauvegardé comme brouillon. Vous pourrez le reprendre plus tard.',
+                confirmText: 'Parfait',
+                confirmClass: 'btn-success',
+                icon: 'bi-save',
+                iconClass: 'success',
+                onConfirm: () => {
+                    formHasChanges = false;
+                    showNotification('Brouillon sauvegardé avec succès', 'success');
+                }
+            });
+        }
+
+        function setupFormValidation() {
+            const form = document.getElementById('mkbaCompleteForm');
+            
+            form.addEventListener('submit', function(event) {
+                let isValid = true;
+                const errors = [];
+
+                // Sauvegarder le contenu WYSIWYG
+                if (quillEditor) {
+                    document.getElementById('contenuWysiwyg').value = quillEditor.root.innerHTML;
+                }
+
+                // Validation du titre
+                const titre = form.querySelector('[name="titre"]');
+                if (!titre.value.trim()) {
+                    showFieldError(titre, 'Le titre est requis');
+                    errors.push('Titre manquant');
+                    isValid = false;
+                } else {
+                    clearFieldError(titre);
+                }
+
+                // Validation de la description
+                const description = form.querySelector('[name="description"]');
+                if (!description.value.trim()) {
+                    showFieldError(description, 'La description est requise');
+                    errors.push('Description manquante');
+                    isValid = false;
+                } else {
+                    clearFieldError(description);
+                }
+
+                // Validation de la catégorie
+                const categorie = form.querySelector('[name="categorie"]');
+                if (!categorie.value) {
+                    showFieldError(categorie, 'Veuillez sélectionner une catégorie');
+                    errors.push('Catégorie non sélectionnée');
+                    isValid = false;
+                } else {
+                    clearFieldError(categorie);
+                }
+
+                // Validation de l'auteur principal
+                const auteurPrincipal = form.querySelector('[name="auteur_principal"]');
+                if (!auteurPrincipal.value) {
+                    showFieldError(auteurPrincipal.parentElement, 'Veuillez sélectionner un auteur principal');
+                    errors.push('Auteur principal non sélectionné');
+                    isValid = false;
+                } else {
+                    clearFieldError(auteurPrincipal.parentElement);
+                }
+
+                // Validation de l'email si renseigné
+                const email = form.querySelector('[name="email"]');
+                if (email.value && !isValidEmail(email.value)) {
+                    showFieldError(email, 'Format d\'email invalide');
+                    errors.push('Email invalide');
+                    isValid = false;
+                } else {
+                    clearFieldError(email);
+                }
+
+                if (!isValid) {
+                    event.preventDefault();
+                    
+                    // Scroll vers le premier champ en erreur
+                    const firstError = form.querySelector('.is-invalid');
+                    if (firstError) {
+                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        firstError.focus();
+                    }
+                    
+                    // Afficher modal d'erreur
+                    showGenericModal({
+                        title: 'Erreurs de validation',
+                        bodyTitle: 'Formulaire incomplet',
+                        bodyText: `Veuillez corriger les erreurs suivantes : ${errors.join(', ')}`,
+                        confirmText: 'Corriger',
+                        confirmClass: 'btn-warning',
+                        icon: 'bi-exclamation-triangle',
+                        iconClass: 'warning'
+                    });
+                } else {
+                    // Afficher notification de succès
+                    formHasChanges = false;
+                    showNotification('Formulaire validé, envoi en cours...', 'success');
+                }
+            });
+        }
+
+        function showFieldError(field, message) {
+            clearFieldError(field);
+            field.classList.add('is-invalid');
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            
+            field.parentNode.appendChild(errorDiv);
+        }
+
+        function clearFieldError(field) {
+            field.classList.remove('is-invalid');
+            const errorDiv = field.parentNode.querySelector('.error-message');
+            if (errorDiv) {
+                errorDiv.remove();
+            }
+        }
+
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        // Gestion des notifications de succès pour les champs
+        function showFieldSuccess(field, message) {
+            clearFieldError(field);
+            field.classList.add('is-valid');
+            
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success-message';
+            successDiv.textContent = message;
+            
+            field.parentNode.appendChild(successDiv);
+            
+            // Supprimer après 3 secondes
+            setTimeout(() => {
+                successDiv.remove();
+                field.classList.remove('is-valid');
+            }, 3000);
+        }
+
+        // Auto-sauvegarde du brouillon (optionnel)
+        function autosaveDraft() {
+            // Débouncing pour éviter trop d'appels
+            clearTimeout(window.autosaveTimeout);
+            window.autosaveTimeout = setTimeout(() => {
+                console.log('Auto-sauvegarde du brouillon...');
+                // Ici vous pouvez implémenter un appel AJAX pour sauvegarder
+            }, 3000);
+        }
+
+        // Raccourcis clavier pour l'éditeur WYSIWYG
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 's':
+                        e.preventDefault();
+                        saveDraft();
+                        break;
+                    case 'b':
+                        if (quillEditor && quillEditor.hasFocus()) {
+                            e.preventDefault();
+                            quillEditor.format('bold', !quillEditor.getFormat().bold);
+                        }
+                        break;
+                    case 'i':
+                        if (quillEditor && quillEditor.hasFocus()) {
+                            e.preventDefault();
+                            quillEditor.format('italic', !quillEditor.getFormat().italic);
+                        }
+                        break;
+                }
+            }
+        });
+
+        // ========== FONCTIONS SPÉCIFIQUES POUR LE MODAL ==========
+        
+        // Exemple d'utilisation pour différents types de confirmation
+        function showDeleteConfirmation(itemType, itemName, callback) {
+            showGenericModal({
+                title: `Supprimer ${itemType}`,
+                bodyTitle: 'Confirmer la suppression',
+                bodyText: `Êtes-vous sûr de vouloir supprimer "${itemName}" ? Cette action est irréversible.`,
+                confirmText: 'Supprimer définitivement',
+                confirmClass: 'btn-danger',
+                icon: 'bi-trash',
+                iconClass: 'danger',
+                onConfirm: callback
+            });
+        }
+
+        function showSaveConfirmation(callback) {
+            showGenericModal({
+                title: 'Sauvegarder les modifications',
+                bodyTitle: 'Confirmer la sauvegarde',
+                bodyText: 'Voulez-vous sauvegarder toutes les modifications apportées à ce document ?',
+                confirmText: 'Sauvegarder',
+                confirmClass: 'btn-success',
+                icon: 'bi-check-circle',
+                iconClass: 'success',
+                onConfirm: callback
+            });
+        }
+
+        function showWarningModal(title, message, callback) {
+            showGenericModal({
+                title: title,
+                bodyTitle: 'Attention',
+                bodyText: message,
+                confirmText: 'Continuer',
+                confirmClass: 'btn-warning',
+                icon: 'bi-exclamation-triangle',
+                iconClass: 'warning',
+                onConfirm: callback
+            });
+        }
+
+        function showInfoModal(title, message, callback) {
+            showGenericModal({
+                title: title,
+                bodyTitle: 'Information',
+                bodyText: message,
+                confirmText: 'Compris',
+                confirmClass: 'btn-info',
+                icon: 'bi-info-circle',
+                iconClass: 'info',
+                onConfirm: callback || function() {}
+            });
+        }
+
+        // ========== EXEMPLES D'UTILISATION DU MODAL ==========
+        
+        // Exemple : Confirmation avant suppression d'un enregistrement
+        function deleteDocument(documentId) {
+            showDeleteConfirmation('document', `Document #${documentId}`, () => {
+                // Logique de suppression ici
+                console.log(`Document ${documentId} supprimé`);
+                showNotification('Document supprimé avec succès', 'success');
+            });
+        }
+
+        // Exemple : Avertissement pour des données non sauvegardées
+        function warnUnsavedChanges() {
+            showWarningModal(
+                'Modifications non sauvegardées',
+                'Vous avez des modifications non sauvegardées qui seront perdues si vous continuez.',
+                () => {
+                    formHasChanges = false;
+                    window.location.href = '{{ path("admin_document_index") }}';
+                }
+            );
+        }
+
+        console.log('%c🚀 Formulaire MK BA initialisé avec succès!', 'color: #6d5192; font-size: 16px; font-weight: bold;');
+        console.log('✅ Select2 pour les champs de recherche');
+        console.log('✅ Éditeur WYSIWYG Quill.js');
+        console.log('✅ Upload de fichiers avec boutons de suppression permanents');
+        console.log('✅ Modal générique réutilisable');
+        console.log('✅ Validation de formulaire');
+        console.log('✅ Collections dynamiques');
+        console.log('✅ Suivi des modifications');
+    </script>
+
+{% endblock %}

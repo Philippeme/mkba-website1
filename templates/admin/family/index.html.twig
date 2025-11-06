@@ -1,0 +1,205 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block title %}Families{% endblock %}
+
+{% block body %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">
+        <i class="bi-collection me-2"></i>
+        Families Management
+    </h1>
+    <a href="{{ path('admin_family_new') }}" class="btn btn-primary">
+        <i class="bi-plus-circle me-2"></i>
+        New Family
+    </a>
+</div>
+
+{% if families|length > 0 %}
+<div class="card shadow-sm">
+    <div class="card-header bg-light">
+        <h5 class="card-title mb-0">
+            <i class="bi-list-ul me-2"></i>
+            All Families ({{ families|length }})
+        </h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th width="5%">#</th>
+                        <th width="10%">Icon</th>
+                        <th width="20%">Name</th>
+                        <th width="30%">Description</th>
+                        <th width="8%">Procedures</th>
+                        <th width="8%">Order</th>
+                        <th width="8%">Status</th>
+                        <th width="11%">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for family in families %}
+                    <tr>
+                        <td class="text-muted">#{{ family.id }}</td>
+                        <td>
+                            {% if family.icon %}
+                                {% if family.icon starts with 'bi-' %}
+                                    <i class="{{ family.icon }}" style="font-size: 1.5rem; color: #007bff;"></i>
+                                {% else %}
+                                    <img src="{{ asset('uploads/families/' ~ family.icon) }}" 
+                                         alt="{{ family.fname }}" 
+                                         class="img-thumbnail" 
+                                         style="width: 40px; height: 40px; object-fit: cover;">
+                                {% endif %}
+                            {% else %}
+                                <div class="bg-light d-flex align-items-center justify-content-center rounded"
+                                     style="width: 40px; height: 40px;">
+                                    <i class="bi-image text-muted"></i>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <strong>{{ family.fname }}</strong>
+                            <small class="text-muted d-block">
+                                Created: {{ family.createdAt|date('M d, Y') }}
+                            </small>
+                        </td>
+                        <td>
+                            <div class="text-truncate" style="max-width: 250px;" title="{{ family.description }}">
+                                {{ family.description|slice(0, 80) }}{% if family.description|length > 80 %}...{% endif %}
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-info">{{ family.procedures|length }}</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-secondary">{{ family.displayOrder }}</span>
+                        </td>
+                        <td>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input status-toggle" 
+                                       type="checkbox" 
+                                       data-family-id="{{ family.id }}"
+                                       {% if family.isActive %}checked{% endif %}>
+                                <label class="form-check-label">
+                                    <span class="badge bg-{{ family.isActive ? 'success' : 'danger' }}">
+                                        {{ family.isActive ? 'Active' : 'Inactive' }}
+                                    </span>
+                                </label>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="{{ path('admin_family_show', {'id': family.id}) }}" 
+                                   class="btn btn-outline-info" title="View">
+                                    <i class="bi-eye"></i>
+                                </a>
+                                <a href="{{ path('admin_family_edit', {'id': family.id}) }}" 
+                                   class="btn btn-outline-warning" title="Edit">
+                                    <i class="bi-pencil"></i>
+                                </a>
+                                <button type="button" 
+                                        class="btn btn-outline-danger delete-btn" 
+                                        data-family-id="{{ family.id }}"
+                                        data-family-name="{{ family.fname }}"
+                                        title="Delete">
+                                    <i class="bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i class="bi-collection text-muted" style="font-size: 4rem;"></i>
+    <h3 class="text-muted mt-3">No families found</h3>
+    <p class="text-muted">Start by creating your first family</p>
+    <a href="{{ path('admin_family_new') }}" class="btn btn-primary">
+        <i class="bi-plus-circle me-2"></i>
+        Create First Family
+    </a>
+</div>
+{% endif %}
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="bi-exclamation-triangle me-2"></i>
+                    Confirm Deletion
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the family <strong id="familyName"></strong>?</p>
+                <p class="text-muted small">This action will deactivate the family and cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="post" style="display: inline;">
+                    <input type="hidden" name="_token" id="deleteToken">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi-trash me-1"></i>
+                        Delete Family
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Status toggle functionality
+    document.querySelectorAll('.status-toggle').forEach(function(toggle) {
+        toggle.addEventListener('change', function() {
+            const familyId = this.dataset.familyId;
+            
+            fetch(`/admin/family/${familyId}/toggle-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const badge = this.parentElement.querySelector('.badge');
+                    badge.className = `badge bg-${data.status ? 'success' : 'danger'}`;
+                    badge.textContent = data.status ? 'Active' : 'Inactive';
+                } else {
+                    this.checked = !this.checked; // Revert change
+                    alert('Error updating status: ' + data.message);
+                }
+            })
+            .catch(error => {
+                this.checked = !this.checked; // Revert change
+                alert('Error updating status');
+            });
+        });
+    });
+
+    // Delete modal functionality
+    document.querySelectorAll('.delete-btn').forEach(function(button) {
+        button.addEventListener('click', function() {
+            const familyId = this.dataset.familyId;
+            const familyName = this.dataset.familyName;
+            
+            document.getElementById('familyName').textContent = familyName;
+            document.getElementById('deleteForm').action = `/admin/family/${familyId}/delete`;
+            document.getElementById('deleteToken').value = '{{ csrf_token("delete") }}';
+            
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        });
+    });
+});
+</script>
+{% endblock %}

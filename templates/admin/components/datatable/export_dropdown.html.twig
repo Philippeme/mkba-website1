@@ -1,0 +1,12 @@
+{# templates/admin/components/datatable/export_dropdown.html.twig #}
+
+<div class="mkba-export-dropdown">
+    <button class="mkba-btn mkba-btn-primary">
+        <i class="fas fa-download me-1"></i>Exporter <i class="fas fa-chevron-down ms-1"></i>
+    </button>
+    <div class="mkba-dropdown-content">
+        {# Note : exportData doit être une fonction JS disponible globalement (voir DatatableManager) #}
+        <a href="#" onclick="exportData('excel')"><i class="fas fa-file-excel me-2 text-success"></i>Excel</a>
+        <a href="#" onclick="exportData('pdf')"><i class="fas fa-file-pdf me-2 text-danger"></i>PDF</a>
+    </div>
+</div>

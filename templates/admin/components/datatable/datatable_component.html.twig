@@ -1,0 +1,94 @@
+{# 🎨 datatable_component.html.twig #}
+{% block datatable_component %}
+    {% set default_options = {
+        'new_button_path': '#',
+        'new_button_label': 'Nouveau'
+    } %}
+    {% set options = options|default({})|merge(default_options) %}
+
+    <div class="mkba-container">
+        {# En-tête de la page avec statistiques et bouton Nouveau #}
+        <div class="mkba-header">
+            <div class="mkba-header-content">
+                <div style="width: 200px;"></div>
+                <div class="mkba-header-center">
+                    <h2>{{ header_icon|raw }} {{ header_title|default('Gestion des Données') }}</h2>
+                </div>
+                <div>
+                    <a href="{{ options.new_button_path }}" class="mkba-add-button">
+                        <i class="fas fa-plus"></i>
+                        {{ options.new_button_label }}
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        {# Contrôles de filtrage, recherche et action #}
+        <div class="mkba-controls">
+            <div class="row align-items-center">
+                {# Zone de Recherche - Peut être rendue spécifique si besoin #}
+                <div class="col-md-3">
+                    <div class="mkba-search-box">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="searchInput" class="form-control" placeholder="Rechercher...">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <input type="date" id="dateStart" class="form-control" placeholder="Date début" title="Date de début">
+                </div>
+                <div class="col-md-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="date" id="dateEnd" class="form-control" placeholder="Date fin" title="Date de fin">
+                    </div>
+                </div>
+
+                {# Zone de Filtres Spécifiques (Statut, Date, etc.) - À personnaliser #}
+                <div class="col-md-2">
+                    {# 💡 Bloc pour injecter les filtres rapides spécifiques à la page #}
+                    {% block quick_filters %}{% endblock %}
+
+                </div>
+                <div class="col-md-1">
+                    <button class="btn btn-outline-secondary" id="advancedFiltersBtn" title="Filtres avancés" style="min-width: 40px; padding: 8px;">
+                        <i class="fas fa-filter"></i>
+                    </button>
+                </div>
+                {# Actions groupées et Export #}
+                <div class="col-md-2">
+                    <div class="d-flex justify-content-end gap-2">
+                        {# Actions groupées #}
+                        {% include 'admin/components/datatable/bulk_actions_dropdown.html.twig' %}
+                        {# Export #}
+                        {% include 'admin/components/datatable/export_dropdown.html.twig' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Conteneur de la Table #}
+        <div class="mkba-table-container position-relative">
+            <div class="mkba-loading" id="loadingSpinner">
+                <div class="mkba-spinner"></div>
+            </div>
+            <table class="table mkba-table">
+                <thead>
+                <tr>
+                    {# 💡 Bloc pour injecter les THs (y compris la case à cocher 'tout sélectionner') #}
+                    {% block table_headers %}{% endblock %}
+                    <th width="100">Actions</th>
+                </tr>
+                </thead>
+                <tbody id="tableBody">
+                {# 💡 Bloc pour injecter les TRs (les données elles-mêmes) #}
+                {% block table_rows %}{% endblock %}
+                </tbody>
+            </table>
+        </div>
+
+        {# Pagination #}
+        {% include 'admin/components/datatable/pagination_controls.html.twig' %}
+    </div>
+
+    {# Formulaires cachés #}
+{#    <div id="hiddenForms" style="display: none;"></div>#}
+{% endblock %}

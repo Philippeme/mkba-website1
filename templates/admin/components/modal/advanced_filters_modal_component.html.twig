@@ -1,0 +1,30 @@
+{# 🎨 advanced_filters_modal_component.html.twig #}
+{% block advanced_filters_modal_component %}
+    <div class="modal fade" id="{{ modal_id|default('advancedFiltersModal') }}" tabindex="-1" aria-labelledby="{{ modal_id|default('advancedFiltersModal') }}Label" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="{{ modal_id|default('advancedFiltersModal') }}Label">
+                        <i class="fas fa-filter me-2"></i>Filtres Avancés - {{ title_suffix|default('Liste') }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        {# 💡 Bloc pour injecter les champs de filtre spécifiques à l'entité #}
+                        {% block filter_fields %}{% endblock %}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Fermer
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="{{ apply_function|default('applyAdvancedFilters') }}()">
+{#                        <i class="fas fa-check me-2"></i>#}
+                        Appliquer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

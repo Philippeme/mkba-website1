@@ -1,0 +1,822 @@
+/* responsive.css - Styles pour l'adaptation aux différents écrans (version finale maquette) */
+
+/* Grand écran (ordinateurs de bureau) */
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1140px;
+    }
+
+    /* Optimisation du header pour grands écrans */
+    .header-top-elements {
+        margin-right: 25px;
+    }
+
+    .main-nav ul li {
+        margin: 0 25px;
+    }
+
+    /* CORRECTION : Alignement optimal pour les grands écrans */
+    .echo-section .section-title,
+    .more-section .section-title {
+        margin-left: 80px;
+    }
+}
+
+/* Écrans moyens (ordinateurs portables) */
+@media (max-width: 1199px) {
+    .container {
+        max-width: 960px;
+    }
+
+    .slide-content {
+        width: 60%;
+    }
+
+    .slide-content h2 {
+        font-size: 38px;
+    }
+
+    .project-title,
+    .news-title {
+        font-size: 16px;
+    }
+
+    .project-description,
+    .news-excerpt p {
+        font-size: 13px;
+    }
+
+    .topic-content h3 {
+        font-size: 24px;
+    }
+
+    .expert-image {
+        max-height: 330px;
+    }
+
+    .expert-description p {
+        font-size: 13px;
+    }
+
+    /* Ajustements pour le header responsive selon la maquette */
+    .header-top-elements {
+        margin-right: 20px;
+    }
+
+    .main-nav ul li {
+        margin: 0 18px;
+    }
+
+    .social-icons {
+        margin-right: 12px;
+    }
+
+    .social-icons a {
+        margin: 0 3px;
+        font-size: 15px;
+    }
+
+    .contact-btn {
+        margin-right: 12px;
+    }
+
+    .contact-btn .btn {
+        padding: 7px 14px;
+        font-size: 12px;
+    }
+
+    /* Ajustement des dropdowns pour écrans moyens */
+    .dropdown-menu {
+        min-width: 200px;
+        padding: 16px 0;
+    }
+
+    .dropdown-menu ul li a {
+        padding: 10px 15px 10px 35px;
+        font-size: 13px;
+    }
+
+    /* CORRECTION : Alignement pour écrans moyens */
+    .echo-section .section-title,
+    .more-section .section-title {
+        margin-left: 60px;
+    }
+}
+
+/* Tablettes */
+@media (max-width: 991px) {
+    .container {
+        max-width: 720px;
+    }
+
+    /* Ajustements du header pour tablettes */
+    header .logo img {
+        max-height: 50px;
+    }
+
+    .main-nav ul li {
+        margin: 0 12px;
+    }
+
+    .main-nav ul li a {
+        font-size: 12px;
+    }
+
+    /* Nouveau layout header pour tablettes */
+    .header-top-elements {
+        margin-right: 15px;
+        margin-bottom: 8px;
+    }
+
+    .social-icons {
+        margin-right: 10px;
+    }
+
+    .social-icons a {
+        margin: 0 2px;
+        font-size: 14px;
+    }
+
+    .lang-selector a,
+    .lang-selector span {
+        font-size: 12px;
+    }
+
+    .contact-btn {
+        margin-right: 10px;
+    }
+
+    .contact-btn .btn {
+        padding: 6px 12px;
+        font-size: 11px;
+    }
+
+    /* Dropdown adjustments pour tablettes */
+    .dropdown-menu {
+        min-width: 180px;
+        padding: 14px 0;
+    }
+
+    .dropdown-menu ul li a {
+        padding: 8px 12px 8px 30px;
+        font-size: 12px;
+    }
+
+    .slide-content {
+        width: 70%;
+        left: 50px;
+        bottom: 80px;
+    }
+
+    .slide-content h2 {
+        font-size: 32px;
+    }
+
+    .slide-content p {
+        font-size: 16px;
+    }
+
+    .section-title {
+        font-size: 28px;
+    }
+
+    /* CORRECTION : Alignement pour tablettes */
+    .echo-section .section-title,
+    .more-section .section-title {
+        margin-left: 40px;
+    }
+
+    .project-image,
+    .service-image,
+    .news-image {
+        height: 180px;
+    }
+
+    .echo-slide .slide-content {
+        width: 60%;
+        padding: 25px;
+    }
+
+    .echo-slide .slide-content h3 {
+        font-size: 20px;
+    }
+
+    .echo-slide .slide-image {
+        height: 350px;
+    }
+
+    .topic-content,
+    .topic-image {
+        height: 300px;
+    }
+
+    .topic-content {
+        padding: 30px;
+    }
+
+    .expert-image {
+        max-height: 320px;
+    }
+
+    /* Expert header responsive */
+    .expert-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .expert-social {
+        align-self: flex-end;
+        margin-top: -30px;
+    }
+
+    .stat-number {
+        font-size: 40px;
+    }
+
+    .world-map {
+        height: 500px;
+    }
+
+    /* Footer responsive adjustments */
+    .footer-column-separator::before {
+        display: none;
+    }
+
+    .footer-menu {
+        margin-bottom: 30px;
+    }
+
+    .footer-menu h3 {
+        font-size: 16px;
+    }
+
+    .footer-menu ul li a {
+        font-size: 13px;
+    }
+
+    .footer-nav li.separator,
+    .footer-links li.separator {
+        display: none;
+    }
+}
+
+/* Téléphones en mode paysage et petites tablettes */
+@media (max-width: 767px) {
+    .container {
+        max-width: 540px;
+    }
+
+    /* Header mobile complete redesign selon maquette */
+    header {
+        position: relative;
+        background-color: var(--primary-color);
+    }
+
+    .top-header {
+        padding: 10px 0;
+    }
+
+    .main-nav {
+        display: none;
+    }
+
+    .mobile-menu-toggle {
+        display: inline-block;
+    }
+
+    /* Layout mobile pour le header selon la maquette */
+    .header-right-section {
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: center;
+    }
+
+    .header-top-elements {
+        display: none;
+        /* Masquer sur mobile */
+    }
+
+    .header-bottom-elements {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        width: 100%;
+    }
+
+    .lang-selector {
+        order: 1;
+        margin-right: 8px;
+    }
+
+    .contact-btn {
+        order: 2;
+        margin-right: 8px;
+    }
+
+    .contact-btn .btn {
+        padding: 5px 10px;
+        font-size: 10px;
+    }
+
+    .mobile-menu-toggle {
+        order: 3;
+    }
+
+    .slide {
+        height: 60vh;
+    }
+
+    .slide-content {
+        width: 90%;
+        left: 20px;
+        bottom: 60px;
+    }
+
+    .slide-content h2 {
+        font-size: 28px;
+    }
+
+    .slide-content p {
+        font-size: 14px;
+    }
+
+    .section-title {
+        font-size: 24px;
+        margin-bottom: 30px;
+    }
+
+    /* CORRECTION : Réinitialiser l'alignement pour mobile */
+    .echo-section .section-title,
+    .more-section .section-title {
+        margin-left: 0;
+        text-align: center;
+    }
+
+    .project-card,
+    .service-card,
+    .news-card {
+        margin-bottom: 20px;
+    }
+
+    .echo-slide .slide-content {
+        width: 80%;
+        padding: 20px;
+        left: 30px;
+    }
+
+    .echo-slide .slide-content h3 {
+        font-size: 20px;
+    }
+
+    .echo-slide .slide-image {
+        height: 300px;
+    }
+
+    .stats-section .col-md-3 {
+        margin-bottom: 30px;
+    }
+
+    .topic-content,
+    .topic-image {
+        height: auto;
+    }
+
+    .topic-content {
+        padding: 25px;
+    }
+
+    .topic-content h3 {
+        font-size: 24px;
+    }
+
+    .world-map {
+        height: 400px;
+        margin-top: 30px;
+    }
+
+    .filter-panel {
+        padding: 20px;
+    }
+
+    .expert-image {
+        max-height: 250px;
+    }
+
+    /* Expert section mobile adjustments */
+    .expert-header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .expert-social {
+        align-self: flex-start;
+        margin-top: 0;
+    }
+
+    .footer-main {
+        padding: 30px 0;
+    }
+
+    .footer-menu {
+        margin-top: 30px;
+    }
+
+    .footer-bottom {
+        padding: 15px 0;
+    }
+
+    .footer-links,
+    .footer-copyright {
+        text-align: center;
+    }
+
+    .footer-links {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .footer-links li {
+        margin: 5px 0;
+    }
+
+    .footer-nav {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .footer-nav li {
+        margin: 5px 0;
+    }
+
+    .text-right,
+    .text-left {
+        text-align: center;
+    }
+}
+
+/* Téléphones en mode portrait */
+@media (max-width: 575px) {
+    .slide {
+        height: 50vh;
+    }
+
+    .slide-content {
+        width: 95%;
+        left: 10px;
+        bottom: 40px;
+    }
+
+    .slide-content h2 {
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+
+    .slide-content p {
+        font-size: 13px;
+        margin-bottom: 15px;
+    }
+
+    .slider-controls {
+        bottom: 15px;
+    }
+
+    .section-title {
+        font-size: 22px;
+        margin-bottom: 25px;
+    }
+
+    /* CORRECTION : Maintenir l'alignement centré pour les petits écrans */
+    .echo-section .section-title,
+    .more-section .section-title {
+        margin-left: 0;
+        text-align: center;
+    }
+
+    .project-image,
+    .service-image,
+    .news-image {
+        height: 160px;
+    }
+
+    .echo-slide .slide-content {
+        width: 95%;
+        left: 10px;
+        padding: 15px;
+    }
+
+    .echo-slide .slide-content h3 {
+        font-size: 18px;
+    }
+
+    .echo-slide .slide-image {
+        height: 250px;
+    }
+
+    .topic-content {
+        padding: 20px;
+    }
+
+    .topic-content h3 {
+        font-size: 22px;
+    }
+
+    .world-map {
+        height: 300px;
+    }
+
+    .expert-image {
+        max-height: 200px;
+    }
+
+    .expert-info {
+        padding: 20px;
+    }
+
+    .expert-name {
+        font-size: 20px;
+    }
+
+    .expert-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .expert-social {
+        align-self: flex-end;
+        margin-top: 10px;
+    }
+
+    .partner-logo {
+        height: 80px;
+    }
+
+    .footer-copyright,
+    .footer-links li a {
+        font-size: 12px;
+    }
+
+    .footer-credits {
+        font-size: 10px;
+    }
+
+    .btn {
+        padding: 8px 15px;
+        font-size: 12px;
+    }
+
+    .btn-block {
+        width: 100%;
+    }
+
+    .row {
+        margin-right: -5px;
+        margin-left: -5px;
+    }
+
+    [class*="col-"] {
+        padding-right: 5px;
+        padding-left: 5px;
+    }
+
+    .mobile-menu {
+        width: 260px;
+    }
+
+    /* Mobile header adjustments pour très petits écrans */
+    .header-bottom-elements {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 5px;
+    }
+
+    .lang-selector {
+        order: 1;
+        margin-right: 5px;
+        margin-bottom: 3px;
+    }
+
+    .contact-btn {
+        order: 2;
+        margin-right: 5px;
+        margin-bottom: 3px;
+    }
+
+    .mobile-menu-toggle {
+        order: 3;
+        margin-bottom: 3px;
+    }
+}
+
+/* Ajustements spécifiques pour les très petits écrans */
+@media (max-width: 360px) {
+    .slide-content h2 {
+        font-size: 20px;
+    }
+
+    .section-title {
+        font-size: 20px;
+    }
+
+    /* CORRECTION : Maintenir l'alignement centré pour les très petits écrans */
+    .echo-section .section-title,
+    .more-section .section-title {
+        margin-left: 0;
+        text-align: center;
+    }
+
+    .project-image,
+    .service-image,
+    .news-image {
+        height: 140px;
+    }
+
+    .expert-image {
+        max-height: 180px;
+    }
+
+    .expert-name {
+        font-size: 18px;
+    }
+
+    .expert-position,
+    .expert-company {
+        font-size: 14px;
+    }
+
+    .expert-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .expert-social {
+        align-self: flex-end;
+        margin-top: 5px;
+    }
+
+    .partner-logo {
+        height: 70px;
+    }
+
+    .slider-dots .dot {
+        width: 8px;
+        height: 8px;
+        margin: 0 3px;
+    }
+
+    .btn {
+        padding: 7px 12px;
+        font-size: 11px;
+    }
+
+    .contact-btn .btn {
+        padding: 4px 8px;
+        font-size: 9px;
+    }
+
+    /* Layout ultra compact pour les très petits écrans */
+    .header-bottom-elements {
+        justify-content: center;
+        gap: 3px;
+    }
+
+    .lang-selector,
+    .contact-btn,
+    .mobile-menu-toggle {
+        margin: 0;
+    }
+}
+
+/* Ajustements spéciaux pour l'affichage des dropdowns sur tous les écrans */
+@media (min-width: 768px) {
+    .has-dropdown:hover .dropdown-menu {
+        display: block;
+    }
+
+    /* Assurer que les dropdowns sont bien positionnés selon la maquette */
+    .dropdown-menu {
+        white-space: nowrap;
+    }
+
+    .dropdown-menu ul li a {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+/* Optimisations pour la carte sur différents écrans */
+@media (max-width: 991px) {
+    .world-map {
+        height: 450px;
+    }
+}
+
+@media (max-width: 767px) {
+    .world-map {
+        height: 350px;
+    }
+
+    .map-info-popup {
+        font-size: 12px;
+        padding: 12px;
+        min-width: 180px;
+    }
+
+    .country-flag img {
+        width: 20px;
+    }
+
+    /* CORRECTION : Styles responsive pour les nouvelles popups de projets */
+    .custom-popup-maquette .leaflet-popup-content-wrapper {
+        font-size: 12px;
+    }
+
+    .project-popup-maquette {
+        max-width: 250px;
+    }
+
+    .popup-header {
+        padding: 10px 12px;
+    }
+
+    .popup-body {
+        padding: 12px;
+    }
+
+    .project-title-popup {
+        font-size: 14px;
+    }
+
+    .meta-item {
+        font-size: 12px;
+    }
+
+    .project-description-popup p {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 575px) {
+    .world-map {
+        height: 280px;
+    }
+
+    .map-info-popup {
+        font-size: 11px;
+        padding: 10px;
+        min-width: 160px;
+    }
+
+    .country-flag {
+        margin-bottom: 8px;
+    }
+
+    .country-flag img {
+        width: 18px;
+    }
+
+    /* CORRECTION : Styles responsive pour très petits écrans */
+    .custom-popup-maquette .leaflet-popup-content-wrapper {
+        font-size: 11px;
+    }
+
+    .project-popup-maquette {
+        max-width: 220px;
+    }
+
+    .popup-header {
+        padding: 8px 10px;
+    }
+
+    .popup-body {
+        padding: 10px;
+    }
+
+    .project-title-popup {
+        font-size: 13px;
+        margin-bottom: 10px;
+    }
+
+    .meta-item {
+        font-size: 11px;
+        margin-bottom: 4px;
+    }
+
+    .project-description-popup {
+        padding-top: 8px;
+        margin-top: 8px;
+    }
+
+    .project-description-popup p {
+        font-size: 11px;
+    }
+
+    .country-flag-popup img {
+        width: 20px;
+    }
+
+    .country-name {
+        font-size: 13px;
+    }
+}

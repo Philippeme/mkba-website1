@@ -1,0 +1,32 @@
+{# templates/admin/components/modal/delete_modal_component.html.twig #}
+
+{% set options = options|default({}) %}
+{% set entity_name = options.entity_name|default('élément') %}
+{% set warning_message = options.warning_message|default('Cette action est irréversible.') %}
+{% set modal_title = options.modal_title|default('Supprimer ' ~ entity_name) %}
+
+<div class="delete-modal-overlay" id="deleteModal">
+    <div class="delete-modal">
+        <div class="delete-modal-header">
+            <i class="fas fa-exclamation-triangle delete-modal-icon"></i>
+            <h3 class="delete-modal-title" id="modalTitle">{{ modal_title }}</h3>
+        </div>
+        <div class="delete-modal-body">
+            <div class="delete-modal-message" id="modalMessage">
+                Êtes-vous sûr de vouloir supprimer cet {{ entity_name }} ?
+            </div>
+            <div class="delete-modal-actions">
+                <button class="delete-modal-btn delete-modal-btn-cancel" onclick="cancelDelete()">
+                    <i class="fas fa-times me-2"></i>
+                    Annuler
+                </button>
+                <button class="delete-modal-btn delete-modal-btn-confirm"
+                        onclick="confirmDelete()"
+                        id="confirmDeleteBtn">
+                    <i class="fas fa-trash me-2"></i>
+                    Supprimer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

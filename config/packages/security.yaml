@@ -1,0 +1,81 @@
+security:
+    # Configuration des encodeurs de mots de passe
+    password_hashers:
+        App\Entity\User:
+            algorithm: auto
+
+    # Fournisseurs d'utilisateurs
+    providers:
+        # Base de données utilisateurs
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: username
+
+        # Fallback système pour les cas d'urgence
+        users_in_memory:
+            memory:
+                users:
+                    admin: 
+                        password: '$2y$13$NtDROl4iyw/zJol2el27k.9O/78XAfVGIYQIzj6WLa.McU8rir62e'
+                        roles: ['ROLE_SUPER_ADMIN']
+
+    # Configuration des firewalls
+    firewalls:
+        # Firewall pour les outils de développement
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+            
+        # Firewall principal avec protection renforcée
+        main:
+            lazy: true
+            provider: app_user_provider
+            user_checker: App\Security\UserChecker
+            
+            # Configuration du formulaire de connexion
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                default_target_path: admin_dashboard
+                always_use_default_target_path: true
+                username_parameter: _username
+                password_parameter: _password
+                enable_csrf: true
+                
+            # Configuration de la déconnexion
+            logout:
+                path: app_logout
+                target: app_login
+                invalidate_session: true
+                delete_cookies: []
+                enable_csrf: false
+
+            # Remember me functionality
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 604800 # 1 week in seconds
+                path: /
+                always_remember_me: false
+
+    # Contrôle d'accès renforcé
+    access_control:
+        # Page de connexion accessible publiquement
+        - { path: ^/login$, roles: PUBLIC_ACCESS }
+        
+        # Routes d'administration - accès par rôles
+        - { path: ^/admin/user, roles: [ROLE_SUPER_ADMIN, ROLE_ADMIN] }
+        - { path: ^/admin/role, roles: [ROLE_SUPER_ADMIN, ROLE_ADMIN] }
+        - { path: ^/admin/permission, roles: [ROLE_SUPER_ADMIN, ROLE_ADMIN] }
+        
+        # Autres routes d'administration - accès général
+        - { path: ^/admin, roles: [ROLE_ADMIN, ROLE_MANAGER] }
+        
+        # Protection générale pour toutes les routes admin
+        - { path: ^/admin, roles: IS_AUTHENTICATED_FULLY }
+
+    # Hierarchie des rôles
+    role_hierarchy:
+        ROLE_MANAGER: ROLE_USER
+        ROLE_ADMIN: [ROLE_MANAGER, ROLE_USER]
+        ROLE_SUPER_ADMIN: [ROLE_ADMIN, ROLE_MANAGER, ROLE_USER]
