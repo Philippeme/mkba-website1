@@ -37,7 +37,10 @@
             <a href="#" class="nav-link dropdown-toggle-custom {{ app.request.get('_route') starts with 'admin_project' ? 'active' : '' }}" data-dropdown="projects">
                 <i class="bi-folder"></i>
                 <span class="nav-text">Projets</span>
-                <span class="nav-badge">5</span>
+                {# Badge dynamique basé sur le nombre réel de projets #}
+                {% if sidebar_project_count is defined and sidebar_project_count > 0 %}
+                    <span class="nav-badge">{{ sidebar_project_count }}</span>
+                {% endif %}
                 <i class="bi-chevron-down nav-arrow"></i>
                 <div class="tooltip">Gestion des Projets</div>
             </a>
