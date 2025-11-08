@@ -49,48 +49,6 @@
             </ul>
         </li>
 
-        <li class="nav-item dropdown {{ app.request.get('_route') starts with 'admin_request' ? 'has-active-child' : '' }}">
-            <a href="#" class="nav-link dropdown-toggle-custom {{ app.request.get('_route') starts with 'admin_request' ? 'active' : '' }}" data-dropdown="requests">
-                <i class="bi-journal-text"></i>
-                <span class="nav-text">Demandes</span>
-                <span class="nav-badge">23</span>
-                <i class="bi-chevron-down nav-arrow"></i>
-                <div class="tooltip">Gestion des Demandes</div>
-            </a>
-            <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#"><i class="bi-plus-circle me-2"></i>Nouvelle Demande</a></li>
-                <li><a class="dropdown-item" href="#"><i class="bi-list-ul me-2"></i>Toutes les Demandes</a></li>
-                <li><a class="dropdown-item" href="#"><i class="bi-clock me-2"></i>En Attente</a></li>
-                <li><a class="dropdown-item" href="#"><i class="bi-check-circle me-2"></i>Terminées</a></li>
-            </ul>
-        </li>
-
-        <li class="nav-item dropdown {{ app.request.get('_route') starts with 'admin_procedure' ? 'has-active-child' : '' }}">
-            <a href="#" class="nav-link dropdown-toggle-custom {{ app.request.get('_route') starts with 'admin_procedure' ? 'active' : '' }}" data-dropdown="procedures">
-                <i class="bi-file-earmark-text"></i>
-                <span class="nav-text">Procédures</span>
-                <i class="bi-chevron-down nav-arrow"></i>
-                <div class="tooltip">Gestion des Procédures</div>
-            </a>
-            <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#"><i class="bi-plus-circle me-2"></i>Nouvelle Procédure</a></li>
-                <li><a class="dropdown-item" href="#"><i class="bi-list-ul me-2"></i>Toutes les Procédures</a></li>
-            </ul>
-        </li>
-
-        <li class="nav-item dropdown {{ app.request.get('_route') starts with 'admin_family' ? 'has-active-child' : '' }}">
-            <a href="#" class="nav-link dropdown-toggle-custom {{ app.request.get('_route') starts with 'admin_family' ? 'active' : '' }}" data-dropdown="families">
-                <i class="bi-collection"></i>
-                <span class="nav-text">Familles de Services</span>
-                <i class="bi-chevron-down nav-arrow"></i>
-                <div class="tooltip">Familles de Services</div>
-            </a>
-            <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#"><i class="bi-plus-circle me-2"></i>Nouvelle Famille</a></li>
-                <li><a class="dropdown-item" href="#"><i class="bi-list-ul me-2"></i>Toutes les Familles</a></li>
-            </ul>
-        </li>
-
         <li class="nav-item dropdown {{ app.request.get('_route') starts with 'admin_document' ? 'has-active-child' : '' }}">
             <a href="#" class="nav-link dropdown-toggle-custom {{ app.request.get('_route') starts with 'admin_document' ? 'active' : '' }}" data-dropdown="documents">
                 <i class="bi-file-earmark"></i>
